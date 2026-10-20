@@ -1,0 +1,1055 @@
+[
+  {
+    "code": "PP-400-0139B5",
+    "status": 400,
+    "template": "Check the recipe instruction lengths.",
+    "message": "Check the recipe instruction lengths.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-041418",
+    "status": 400,
+    "template": "That recipe export archive could not be read.",
+    "message": "That recipe export archive could not be read.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-094B30",
+    "status": 400,
+    "template": "Each item must be an object.",
+    "message": "Each item must be an object.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-11BACA",
+    "status": 400,
+    "template": "Enter a section name, short description, icon and valid display order.",
+    "message": "Enter a section name, short description, icon and valid display order.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review the Home inventory section name, display order, duplicate names and archived state. Reload current section definitions before retrying.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-1B82F6",
+    "status": 400,
+    "template": "Enter a valid best-by date.",
+    "message": "Enter a valid best-by date.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-21D642",
+    "status": 400,
+    "template": "Choose a valid browser error kind.",
+    "message": "Choose a valid browser error kind.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-257E92",
+    "status": 400,
+    "template": "No recipes with a name and ingredient list were found in that file.",
+    "message": "No recipes with a name and ingredient list were found in that file.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-291556",
+    "status": 400,
+    "template": "Choose a location to remove.",
+    "message": "Choose a location to remove.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-2A4046",
+    "status": 400,
+    "template": "Invalid quantity change.",
+    "message": "Invalid quantity change.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-2AD3FB",
+    "status": 400,
+    "template": "Use a number between 0 and 100,000.",
+    "message": "Use a number between 0 and 100,000.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-2CC95D",
+    "status": 400,
+    "template": "Choose a supported recipe provider and valid connection settings.",
+    "message": "Choose a supported recipe provider and valid connection settings.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-2FC792",
+    "status": 400,
+    "template": "Search with 3–100 characters.",
+    "message": "Search with 3–100 characters.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-37136B",
+    "status": 400,
+    "template": "Import at most 5,000 items.",
+    "message": "Import at most 5,000 items.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-37FBEF",
+    "status": 400,
+    "template": "Choose a working product image.",
+    "message": "Choose a working product image.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-49F73D",
+    "status": 400,
+    "template": "Choose valid recipe source options.",
+    "message": "Choose valid recipe source options.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-4D2DFF",
+    "status": 400,
+    "template": "Choose inventory or recipes.",
+    "message": "Choose inventory or recipes.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-52FCDB",
+    "status": 400,
+    "template": "This quantity is too large.",
+    "message": "This quantity is too large.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-5BEFEE",
+    "status": 400,
+    "template": "Choose a valid account role and access state.",
+    "message": "Choose a valid account role and access state.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-5C2204",
+    "status": 400,
+    "template": "Enter a recipe page URL.",
+    "message": "Enter a recipe page URL.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-5F8F85",
+    "status": 400,
+    "template": "Choose a supported recipe source.",
+    "message": "Choose a supported recipe source.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-5FC845",
+    "status": 400,
+    "template": "Enter an item name.",
+    "message": "Enter an item name.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-6C6D2E",
+    "status": 400,
+    "template": "Choose valid audit date filters.",
+    "message": "Choose valid audit date filters.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-702D87",
+    "status": 400,
+    "template": "Enter a public HTTPS recipe page URL.",
+    "message": "Enter a public HTTPS recipe page URL.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-719D64",
+    "status": 400,
+    "template": "Enter a location name (1–80 characters) and choose a home mode.",
+    "message": "Enter a location name (1–80 characters) and choose a home mode.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-74EF72",
+    "status": 400,
+    "template": "Enter an 8–14 digit barcode.",
+    "message": "Enter an 8–14 digit barcode.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-75B225",
+    "status": 400,
+    "template": "A recipe title is required before saving.",
+    "message": "A recipe title is required before saving.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-7B4019",
+    "status": 400,
+    "template": "Choose one of the images in this set.",
+    "message": "Choose one of the images in this set.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-83EC58",
+    "status": 400,
+    "template": "Choose personal or household recipe visibility.",
+    "message": "Choose personal or household recipe visibility.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-89DB11",
+    "status": 400,
+    "template": "Check the length of your recipe preferences.",
+    "message": "Check the length of your recipe preferences.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-8A46C8",
+    "status": 400,
+    "template": "Choose a valid recipe export file.",
+    "message": "Choose a valid recipe export file.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-8BC957",
+    "status": 400,
+    "template": "Choose an existing Home inventory section.",
+    "message": "Choose an existing Home inventory section.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review the Home inventory section name, display order, duplicate names and archived state. Reload current section definitions before retrying.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-8D076A",
+    "status": 400,
+    "template": "Choose a valid content type.",
+    "message": "Choose a valid content type.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-8D541A",
+    "status": 400,
+    "template": "That recipe export file could not be read.",
+    "message": "That recipe export file could not be read.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-9751BA",
+    "status": 400,
+    "template": "Use a 3–40 character username and a password of at least 12 characters.",
+    "message": "Use a 3–40 character username and a password of at least 12 characters.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-9E992D",
+    "status": 400,
+    "template": "Import between 1 and 500 recipes at a time.",
+    "message": "Import between 1 and 500 recipes at a time.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-A6D591",
+    "status": 400,
+    "template": "Combined quantity is too large.",
+    "message": "Combined quantity is too large.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-AD8F78",
+    "status": 400,
+    "template": "Use an 8–14 digit barcode.",
+    "message": "Use an 8–14 digit barcode.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-AF4044",
+    "status": 400,
+    "template": "Choose a valid audit page.",
+    "message": "Choose a valid audit page.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-B78AB2",
+    "status": 400,
+    "template": "Choose a recipe provider with a public website.",
+    "message": "Choose a recipe provider with a public website.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-BDD4F5",
+    "status": 400,
+    "template": "Check the recipe text lengths.",
+    "message": "Check the recipe text lengths.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-BE7360",
+    "status": 400,
+    "template": "Choose a supported maintenance action.",
+    "message": "Choose a supported maintenance action.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-C15AA0",
+    "status": 400,
+    "template": "The request is invalid or too large.",
+    "message": "The request is invalid or too large.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-C217A3",
+    "status": 400,
+    "template": "Choose Kitchen or Home inventory for this item.",
+    "message": "Choose Kitchen or Home inventory for this item.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-C89C28",
+    "status": 400,
+    "template": "Choose a valid account identifier.",
+    "message": "Choose a valid account identifier.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-C9B3D9",
+    "status": 400,
+    "template": "Choose supported content fields.",
+    "message": "Choose supported content fields.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-DE49EB",
+    "status": 400,
+    "template": "Choose valid, non-conflicting administrator permissions.",
+    "message": "Choose valid, non-conflicting administrator permissions.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-E1CFDC",
+    "status": 400,
+    "template": "Choose approve or deny.",
+    "message": "Choose approve or deny.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-E609BF",
+    "status": 400,
+    "template": "Enter a household invite code.",
+    "message": "Enter a household invite code.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-EFF20B",
+    "status": 400,
+    "template": "Choose a valid photo smaller than 650 KB after resizing.",
+    "message": "Choose a valid photo smaller than 650 KB after resizing.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-400-F4F93B",
+    "status": 400,
+    "template": "Servings and maximum time must be whole numbers.",
+    "message": "Servings and maximum time must be whole numbers.",
+    "meaning": "A field or request format was rejected.",
+    "checks": "Review required fields, allowed lengths and supported file formats. Retry with corrected information.",
+    "category": "Check the submitted information"
+  },
+  {
+    "code": "PP-401-409716",
+    "status": 401,
+    "template": "Sign in to save items and photos across your devices.",
+    "message": "Sign in to save items and photos across your devices.",
+    "meaning": "The request has no valid signed-in session.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "Sign in again"
+  },
+  {
+    "code": "PP-401-9F5CFD",
+    "status": 401,
+    "template": "Username or password was not recognized.",
+    "message": "Username or password was not recognized.",
+    "meaning": "The request has no valid signed-in session.",
+    "checks": "Confirm the account name and password privately. Do not put passwords into an error report. Check whether the account is disabled or pending approval.",
+    "category": "Sign in again"
+  },
+  {
+    "code": "PP-403-06E327",
+    "status": 403,
+    "template": "This administrator setup link is invalid or was already used.",
+    "message": "This administrator setup link is invalid or was already used.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-0FBB0C",
+    "status": 403,
+    "template": "Your request to join this household is waiting for administrator approval.",
+    "message": "Your request to join this household is waiting for administrator approval.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-130517",
+    "status": 403,
+    "template": "This account has been disabled. Contact an administrator.",
+    "message": "This account has been disabled. Contact an administrator.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-134BB8",
+    "status": 403,
+    "template": "A full administrator is required for recovery backups.",
+    "message": "A full administrator is required for recovery backups.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-2045AB",
+    "status": 403,
+    "template": "This account does not have the required administrator permission.",
+    "message": "This account does not have the required administrator permission.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-802BC2",
+    "status": 403,
+    "template": "Administrator access is required.",
+    "message": "Administrator access is required.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-8A542A",
+    "status": 403,
+    "template": "Upload a photo to this household before using it.",
+    "message": "Upload a photo to this household before using it.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-8EFA6B",
+    "status": 403,
+    "template": "Refresh this page and try again.",
+    "message": "Refresh this page and try again.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Refresh the current HTTPS page. Verify its domain and CSRF session. Check reverse-proxy origin configuration; do not disable these checks.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-B55551",
+    "status": 403,
+    "template": "Only a full administrator can change roles or fine-grained permissions.",
+    "message": "Only a full administrator can change roles or fine-grained permissions.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-BA0C82",
+    "status": 403,
+    "template": "Upload your own replacement photo first.",
+    "message": "Upload your own replacement photo first.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-BE2894",
+    "status": 403,
+    "template": "Only the recipe owner or household admin can remove it.",
+    "message": "Only the recipe owner or household admin can remove it.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-BF57C1",
+    "status": 403,
+    "template": "Request origin was not accepted.",
+    "message": "Request origin was not accepted.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Refresh the current HTTPS page. Verify its domain and CSRF session. Check reverse-proxy origin configuration; do not disable these checks.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-CF5661",
+    "status": 403,
+    "template": "Only the recipe owner or household admin can edit it.",
+    "message": "Only the recipe owner or household admin can edit it.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-E206BF",
+    "status": 403,
+    "template": "Only a full administrator can change a more privileged account.",
+    "message": "Only a full administrator can change a more privileged account.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-FBB220",
+    "status": 403,
+    "template": "Only a household administrator can review join requests.",
+    "message": "Only a household administrator can review join requests.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-403-FC7A8D",
+    "status": 403,
+    "template": "This recipe connection is disabled by an administrator. Existing recipes remain available.",
+    "message": "This recipe connection is disabled by an administrator. Existing recipes remain available.",
+    "meaning": "The account lacks permission, or the request security checks failed.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Access was not accepted"
+  },
+  {
+    "code": "PP-404-05BD36",
+    "status": 404,
+    "template": "Custom location not found.",
+    "message": "Custom location not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Refresh the list, verify the record still exists, and check the deployment asset routes. Do not bypass ownership checks.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-127FA2",
+    "status": 404,
+    "template": "Route not found.",
+    "message": "Route not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Refresh the list, verify the record still exists, and check the deployment asset routes. Do not bypass ownership checks.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-28E3F6",
+    "status": 404,
+    "template": "Household member was not found.",
+    "message": "Household member was not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Refresh the list, verify the record still exists, and check the deployment asset routes. Do not bypass ownership checks.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-4AB845",
+    "status": 404,
+    "template": "Administrator tool not found.",
+    "message": "Administrator tool not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-4D573B",
+    "status": 404,
+    "template": "Error occurrence not found.",
+    "message": "Error occurrence not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Refresh the list, verify the record still exists, and check the deployment asset routes. Do not bypass ownership checks.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-680107",
+    "status": 404,
+    "template": "Content record not found.",
+    "message": "Content record not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Refresh the list, verify the record still exists, and check the deployment asset routes. Do not bypass ownership checks.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-788E94",
+    "status": 404,
+    "template": "Item no longer exists.",
+    "message": "Item no longer exists.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Refresh the list, verify the record still exists, and check the deployment asset routes. Do not bypass ownership checks.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-7B37C9",
+    "status": 404,
+    "template": "Audit not found. Start another scan.",
+    "message": "Audit not found. Start another scan.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Refresh the list, verify the record still exists, and check the deployment asset routes. Do not bypass ownership checks.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-9D0505",
+    "status": 404,
+    "template": "Account not found.",
+    "message": "Account not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Refresh the list, verify the record still exists, and check the deployment asset routes. Do not bypass ownership checks.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-B5A507",
+    "status": 404,
+    "template": "Image options not found.",
+    "message": "Image options not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-B7DFE4",
+    "status": 404,
+    "template": "Recipe image job not found.",
+    "message": "Recipe image job not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-C510A7",
+    "status": 404,
+    "template": "Recipe not found.",
+    "message": "Recipe not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-CB7217",
+    "status": 404,
+    "template": "That household invite code was not recognized.",
+    "message": "That household invite code was not recognized.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Refresh the list, verify the record still exists, and check the deployment asset routes. Do not bypass ownership checks.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-D4A5CB",
+    "status": 404,
+    "template": "Image not found.",
+    "message": "Image not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-DBC6B2",
+    "status": 404,
+    "template": "Home inventory section not found.",
+    "message": "Home inventory section not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Review the Home inventory section name, display order, duplicate names and archived state. Reload current section definitions before retrying.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-DE1F26",
+    "status": 404,
+    "template": "Image job not found.",
+    "message": "Image job not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-E367EF",
+    "status": 404,
+    "template": "Recipe is no longer available.",
+    "message": "Recipe is no longer available.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-404-FF745C",
+    "status": 404,
+    "template": "Item not found.",
+    "message": "Item not found.",
+    "meaning": "The requested resource is missing or is outside the account scope.",
+    "checks": "Refresh the list, verify the record still exists, and check the deployment asset routes. Do not bypass ownership checks.",
+    "category": "Record or route not found"
+  },
+  {
+    "code": "PP-405-7C43F8",
+    "status": 405,
+    "template": "Method not allowed.",
+    "message": "Method not allowed.",
+    "meaning": "This operation does not support that request method.",
+    "checks": "Refresh to the current application build and check the route and HTTP method.",
+    "category": "Request method not supported"
+  },
+  {
+    "code": "PP-409-060391",
+    "status": 409,
+    "template": "This household already has a location with that name.",
+    "message": "This household already has a location with that name.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Refresh current data. Resolve duplicates or wait for the active job. Keep at least one enabled administrator with full permissions.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-148AE9",
+    "status": 409,
+    "template": "This account is already approved.",
+    "message": "This account is already approved.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Refresh current data. Resolve duplicates or wait for the active job. Keep at least one enabled administrator with full permissions.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-1BD95E",
+    "status": 409,
+    "template": "This household has reached the 5,000-item limit.",
+    "message": "This household has reached the 5,000-item limit.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Refresh current data. Resolve duplicates or wait for the active job. Keep at least one enabled administrator with full permissions.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-29188D",
+    "status": 409,
+    "template": "This item’s image changed. Refresh the item before choosing a new image.",
+    "message": "This item’s image changed. Refresh the item before choosing a new image.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-2C9726",
+    "status": 409,
+    "template": "Keep at least one enabled administrator with full permissions.",
+    "message": "Keep at least one enabled administrator with full permissions.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-313D33",
+    "status": 409,
+    "template": "Move the {detail} item(s) out of {detail} before removing this location.",
+    "message": "Move the {detail} item(s) out of {detail} before removing this location.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Refresh current data. Resolve duplicates or wait for the active job. Keep at least one enabled administrator with full permissions.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-37DCB9",
+    "status": 409,
+    "template": "That location is already included by default.",
+    "message": "That location is already included by default.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Refresh current data. Resolve duplicates or wait for the active job. Keep at least one enabled administrator with full permissions.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-50FA22",
+    "status": 409,
+    "template": "The image changed while generating. Refresh to see the newer photo.",
+    "message": "The image changed while generating. Refresh to see the newer photo.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-74CD5B",
+    "status": 409,
+    "template": "Wait for the three images to finish.",
+    "message": "Wait for the three images to finish.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-91BBC3",
+    "status": 409,
+    "template": "Another entry already has this product, location and unit. Add units to that entry instead.",
+    "message": "Another entry already has this product, location and unit. Add units to that entry instead.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Refresh current data. Resolve duplicates or wait for the active job. Keep at least one enabled administrator with full permissions.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-950227",
+    "status": 409,
+    "template": "This record changed. Reload it before saving your edit.",
+    "message": "This record changed. Reload it before saving your edit.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Refresh current data. Resolve duplicates or wait for the active job. Keep at least one enabled administrator with full permissions.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-B8839F",
+    "status": 409,
+    "template": "A Home inventory section already has that name.",
+    "message": "A Home inventory section already has that name.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Review the Home inventory section name, display order, duplicate names and archived state. Reload current section definitions before retrying.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-D7D022",
+    "status": 409,
+    "template": "An image audit is already running.",
+    "message": "An image audit is already running.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-E63A2F",
+    "status": 409,
+    "template": "The system supports up to 100 Home inventory sections.",
+    "message": "The system supports up to 100 Home inventory sections.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Review the Home inventory section name, display order, duplicate names and archived state. Reload current section definitions before retrying.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-409-F20CF1",
+    "status": 409,
+    "template": "That username is already taken.",
+    "message": "That username is already taken.",
+    "meaning": "A duplicate, concurrent change, active job, or last-administrator protection prevented this change.",
+    "checks": "Refresh current data. Resolve duplicates or wait for the active job. Keep at least one enabled administrator with full permissions.",
+    "category": "The change conflicts with current data"
+  },
+  {
+    "code": "PP-413-22AB69",
+    "status": 413,
+    "template": "An exported recipe is larger than 8 MB.",
+    "message": "An exported recipe is larger than 8 MB.",
+    "meaning": "A file, archive entry or expanded import exceeded its size limit.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "This upload is too large"
+  },
+  {
+    "code": "PP-413-31C8E1",
+    "status": 413,
+    "template": "This export contains too many files.",
+    "message": "This export contains too many files.",
+    "meaning": "A file, archive entry or expanded import exceeded its size limit.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "This upload is too large"
+  },
+  {
+    "code": "PP-413-426D37",
+    "status": 413,
+    "template": "Import at most 500 recipes at a time; split this export and try again.",
+    "message": "Import at most 500 recipes at a time; split this export and try again.",
+    "meaning": "A file, archive entry or expanded import exceeded its size limit.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "This upload is too large"
+  },
+  {
+    "code": "PP-413-677CEA",
+    "status": 413,
+    "template": "Choose an export file smaller than 16 MB.",
+    "message": "Choose an export file smaller than 16 MB.",
+    "meaning": "A file, archive entry or expanded import exceeded its size limit.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "This upload is too large"
+  },
+  {
+    "code": "PP-413-A7EAB3",
+    "status": 413,
+    "template": "This export contains too much data to import at once.",
+    "message": "This export contains too much data to import at once.",
+    "meaning": "A file, archive entry or expanded import exceeded its size limit.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "This upload is too large"
+  },
+  {
+    "code": "PP-422-417D03",
+    "status": 422,
+    "template": "No readable recipes were found. Use a provider recipe export, JSON/CSV file, public recipe link, or paste the recipe details.",
+    "message": "No readable recipes were found. Use a provider recipe export, JSON/CSV file, public recipe link, or paste the recipe details.",
+    "meaning": "The public page or export does not contain supported structured recipe information.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "The recipe cannot be imported"
+  },
+  {
+    "code": "PP-422-4CC2C0",
+    "status": 422,
+    "template": "That link did not return a public recipe page.",
+    "message": "That link did not return a public recipe page.",
+    "meaning": "The public page or export does not contain supported structured recipe information.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "The recipe cannot be imported"
+  },
+  {
+    "code": "PP-422-FB5455",
+    "status": 422,
+    "template": "This page does not publish recipe details in a format PantriPortal can import. Try a recipe export file instead.",
+    "message": "This page does not publish recipe details in a format PantriPortal can import. Try a recipe export file instead.",
+    "meaning": "The public page or export does not contain supported structured recipe information.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "The recipe cannot be imported"
+  },
+  {
+    "code": "PP-429-37DCD6",
+    "status": 429,
+    "template": "The image generator is busy. Try again shortly.",
+    "message": "The image generator is busy. Try again shortly.",
+    "meaning": "A request, provider, or generation capacity limit was reached.",
+    "checks": "Check the selected image, its ownership and file limits. For generation failures, run diagnostics and check verified models, memory and dependencies.",
+    "category": "Please wait before retrying"
+  },
+  {
+    "code": "PP-429-623237",
+    "status": 429,
+    "template": "Please wait before trying again. The free lookup service has usage limits.",
+    "message": "Please wait before trying again. The free lookup service has usage limits.",
+    "meaning": "A request, provider, or generation capacity limit was reached.",
+    "checks": "Wait for the limit to reset or queued work to finish. Check provider quotas. Avoid repeated automatic retries.",
+    "category": "Please wait before retrying"
+  },
+  {
+    "code": "PP-500-7251E6",
+    "status": 500,
+    "template": "The recovery snapshot did not pass its integrity check.",
+    "message": "The recovery snapshot did not pass its integrity check.",
+    "meaning": "An unexpected internal failure occurred.",
+    "checks": "Use the request reference to find the audit event. Run diagnostics and inspect private service logs. Verify disk space, permissions and recent release changes.",
+    "category": "The service could not finish"
+  },
+  {
+    "code": "PP-502-1DD582",
+    "status": 502,
+    "template": "A product service did not respond. Try another source or enter the item manually.",
+    "message": "A product service did not respond. Try another source or enter the item manually.",
+    "meaning": "A catalog or recipe service did not return a usable response.",
+    "checks": "Check provider availability, quotas and supported import methods. Retry later or use manual entry.",
+    "category": "An external service is unavailable"
+  },
+  {
+    "code": "PP-502-3BDAA1",
+    "status": 502,
+    "template": "The recipe page could not be reached. You can import a recipe export file instead.",
+    "message": "The recipe page could not be reached. You can import a recipe export file instead.",
+    "meaning": "A catalog or recipe service did not return a usable response.",
+    "checks": "Check the selected provider, supported file format, recipe title and ingredient list. Review archive and field size limits. Keep the original export.",
+    "category": "An external service is unavailable"
+  },
+  {
+    "code": "PP-502-F54AC1",
+    "status": 502,
+    "template": "A free product service is temporarily unavailable or has reached its quota.",
+    "message": "A free product service is temporarily unavailable or has reached its quota.",
+    "meaning": "A catalog or recipe service did not return a usable response.",
+    "checks": "Check provider availability, quotas and supported import methods. Retry later or use manual entry.",
+    "category": "An external service is unavailable"
+  },
+  {
+    "code": "PP-503-122788",
+    "status": 503,
+    "template": "The administrator error guide is not installed.",
+    "message": "The administrator error guide is not installed.",
+    "meaning": "A required model, database or runtime component is unavailable.",
+    "checks": "Check the account role, fine-grained grants and disabled state. A full administrator can correct access. Retain one enabled full administrator.",
+    "category": "A required component is unavailable"
+  }
+]

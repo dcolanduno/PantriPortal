@@ -1,0 +1,21 @@
+[Unit]
+Description=PantriPortal application
+After=network.target
+
+[Service]
+Type=simple
+User=pantriportal
+Group=pantriportal
+WorkingDirectory=/opt/pantry-portal/current
+Environment=PANTRY_DATA=/var/lib/pantry-portal
+Environment=PANTRY_MODEL_CACHE=/opt/pantry-portal/image-models
+Environment=PANTRY_IMAGE_QUANTIZE=1
+Environment=HF_HUB_OFFLINE=1
+ExecStart=/opt/pantry-portal/venv/bin/python /opt/pantry-portal/current/server.py
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

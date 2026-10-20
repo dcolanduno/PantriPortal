@@ -1,0 +1,2 @@
+-r app/requirements.txt
+python-docx>=1.2,<2

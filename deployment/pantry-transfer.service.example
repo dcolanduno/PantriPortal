@@ -1,0 +1,17 @@
+[Unit]
+Description=PantriPortal encrypted browser transfer
+After=network.target
+
+[Service]
+Type=simple
+User=pantriportal
+Group=pantriportal
+WorkingDirectory=/opt/pantry-portal/current
+ExecStart=/opt/pantry-portal/venv/bin/python /opt/pantry-portal/current/migration_server.py
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

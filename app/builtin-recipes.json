@@ -1,0 +1,142 @@
+[
+  {
+    "id": "builtin-tomato-spinach-pasta",
+    "name": "Tomato & spinach pasta",
+    "description": "A quick, bright pasta tossed with tender spinach and a simple tomato and olive oil sauce.",
+    "prepTime": "PT10M",
+    "cookTime": "PT15M",
+    "yield": "2 servings",
+    "category": "Main course",
+    "cuisine": "Italian-inspired",
+    "ingredients": [
+      "Penne pasta",
+      "Crushed tomatoes",
+      "Baby spinach",
+      "Olive oil"
+    ],
+    "instructions": [
+      "Bring a pot of salted water to a boil. Cook the penne until just tender, then reserve a little pasta water and drain.",
+      "Warm olive oil in a skillet. Add crushed tomatoes and simmer for 5 minutes.",
+      "Stir in the spinach and cook until wilted. Season to taste.",
+      "Toss the pasta with the sauce, adding a splash of pasta water if needed. Finish with Parmesan or herbs if you have them."
+    ],
+    "image": "/web-assets/assets/tomato-spinach-pasta.png",
+    "icon": "🍝"
+  },
+  {
+    "id": "builtin-cheesy-spinach-omelet",
+    "name": "Cheesy spinach omelet",
+    "description": "Soft eggs folded around melted cheddar and fresh baby spinach. A simple breakfast or light supper.",
+    "prepTime": "PT5M",
+    "cookTime": "PT7M",
+    "yield": "1 serving",
+    "category": "Breakfast",
+    "ingredients": [
+      "Eggs",
+      "Cheddar cheese",
+      "Baby spinach"
+    ],
+    "instructions": [
+      "Whisk the eggs with a pinch of salt and pepper.",
+      "Warm a little oil or butter in a nonstick skillet. Add the spinach and cook until just wilted.",
+      "Pour in the eggs. Gently draw the cooked edges toward the center while tilting the pan to let uncooked egg flow underneath.",
+      "When nearly set, add cheddar to one half. Fold the omelet over the cheese and cook briefly until melted."
+    ],
+    "image": "/web-assets/assets/cheesy-spinach-omelet.jpg",
+    "icon": "🍳"
+  },
+  {
+    "id": "builtin-tomato-black-bean-skillet",
+    "name": "Tomato black bean skillet",
+    "description": "A hearty one-pan skillet of black beans and tomatoes, gently simmered with olive oil and warm spices.",
+    "prepTime": "PT5M",
+    "cookTime": "PT15M",
+    "yield": "2 servings",
+    "category": "Main course",
+    "cuisine": "Tex-Mex-inspired",
+    "ingredients": [
+      "Crushed tomatoes",
+      "Black beans",
+      "Olive oil"
+    ],
+    "instructions": [
+      "Warm olive oil in a skillet over medium heat.",
+      "Add the crushed tomatoes and drained black beans. Stir in cumin or chili powder if available.",
+      "Simmer for 12–15 minutes, stirring occasionally, until thick and bubbling.",
+      "Taste, season, and serve warm. Add rice, toast, or a spoonful of yogurt if desired."
+    ],
+    "image": "/web-assets/assets/tomato-black-bean-skillet.jpg",
+    "icon": "🥘"
+  },
+  {
+    "id": "builtin-creamy-chicken-pasta",
+    "name": "Creamy chicken pasta",
+    "description": "Tender chicken and penne coated in a creamy cheddar sauce for an easy, comforting dinner.",
+    "prepTime": "PT10M",
+    "cookTime": "PT20M",
+    "yield": "2 servings",
+    "category": "Main course",
+    "cuisine": "Comfort food",
+    "ingredients": [
+      "Penne pasta",
+      "Chicken breast",
+      "Whole milk",
+      "Cheddar cheese"
+    ],
+    "instructions": [
+      "Cook the penne in salted water until tender. Reserve a little pasta water, then drain.",
+      "Cook the chicken in a lightly oiled skillet until browned and fully cooked through. Slice or dice it.",
+      "Lower the heat. Add milk and grated cheddar, stirring until the cheese melts into a smooth sauce.",
+      "Fold in the pasta and chicken. Loosen with pasta water if needed, then season and serve."
+    ],
+    "image": "/web-assets/assets/creamy-chicken-pasta.png",
+    "icon": "🍲"
+  },
+  {
+    "id": "builtin-pea-cheese-pasta",
+    "name": "Pea & cheese pasta",
+    "description": "A quick, creamy pasta with sweet peas, cheddar, and a little olive oil.",
+    "prepTime": "PT5M",
+    "cookTime": "PT15M",
+    "yield": "2 servings",
+    "category": "Main course",
+    "cuisine": "Comfort food",
+    "ingredients": [
+      "Penne pasta",
+      "Frozen peas",
+      "Cheddar cheese",
+      "Olive oil"
+    ],
+    "instructions": [
+      "Boil the penne in salted water. Add the frozen peas for the final 3 minutes of cooking.",
+      "Reserve a mug of pasta water, then drain the pasta and peas.",
+      "Return them to the warm pot. Stir in olive oil and grated cheddar with a splash of pasta water until glossy.",
+      "Season with black pepper and serve while warm."
+    ],
+    "image": "/web-assets/assets/pea-cheese-pasta.jpg",
+    "icon": "🧀"
+  },
+  {
+    "id": "builtin-spinach-egg-bake",
+    "name": "Spinach egg bake",
+    "description": "A savory baked egg casserole with wilted spinach, milk, and melted cheddar.",
+    "prepTime": "PT10M",
+    "cookTime": "PT20M",
+    "yield": "2 servings",
+    "category": "Breakfast",
+    "ingredients": [
+      "Eggs",
+      "Baby spinach",
+      "Whole milk",
+      "Cheddar cheese"
+    ],
+    "instructions": [
+      "Heat the oven to 190°C / 375°F and lightly oil a small baking dish.",
+      "Wilt the spinach in a skillet, then spread it in the baking dish.",
+      "Whisk eggs with a splash of milk, salt, and pepper. Pour over the spinach and scatter cheddar on top.",
+      "Bake for 18–22 minutes, until the center is set. Rest for 5 minutes before serving."
+    ],
+    "image": "/web-assets/assets/spinach-egg-bake.jpg",
+    "icon": "🥬"
+  }
+]

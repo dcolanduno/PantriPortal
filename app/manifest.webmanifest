@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "PantriPortal",
+  "short_name": "PantriPortal",
+  "description": "Your home, in good order. Track pantry food, household items, and recipes.",
+  "start_url": "/?source=installed-app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fbfaf5",
+  "theme_color": "#087e91",
+  "icons": [
+    { "src": "/web-assets/assets/portal-arch-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/web-assets/assets/portal-arch-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

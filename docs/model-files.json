@@ -1,0 +1,85 @@
+{
+  "description": "Public recognition assets preserved locally; restore with tools/setup_recognition_model.py. Weights are not in Git.",
+  "files": [
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/config.json",
+      "bytes": 4524,
+      "sha256": "493ef57ff783e42d1530c91b53469b7fdf8db8a9c1408e86998fcb7899a4f495"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/configuration.json",
+      "bytes": 88,
+      "sha256": "3c27023c83c97b0324f731af506213972ce59102c13e38bc67c15fa22c8d1769"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/download-provenance.json",
+      "bytes": 4999,
+      "sha256": "1acfffe4ad6e51bc9a30dcc3454d11e825b718d0c6fd3bdf4b016742f450297b"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/merges.txt",
+      "bytes": 524619,
+      "sha256": "9fd691f7c8039210e0fced15865466c65820d09b63988b0174bfe25de299051a"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/onnx/model_quantized.onnx",
+      "bytes": 153695702,
+      "sha256": "0898a3facfdb27f0a041e57649b4989cfd094e4a0040d6ae75ed69917dfc7328"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/onnx/text_model_quantized.onnx",
+      "bytes": 64504507,
+      "sha256": "73baab855d406190da9faa498cfedf65f15cf309f4cc7385b7b032e6d08e5c3a"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/onnx/vision_model_quantized.onnx",
+      "bytes": 89117001,
+      "sha256": "583fd1110a514667812fee7d684952aaf82a99b959760c8d7dca7e0ab9839299"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/preprocessor_config.json",
+      "bytes": 520,
+      "sha256": "6f638fb9401a6d6296feff533ee7efe657b787c49f954f82f5906b36ef2a1b1f"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/README.md",
+      "bytes": 1404,
+      "sha256": "19c2ef35fa89966c7fa7aa30666b4e3aeef4b075461626be55e6037133cc6aa4"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/special_tokens_map.json",
+      "bytes": 472,
+      "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/tokenizer.json",
+      "bytes": 2224119,
+      "sha256": "f7f3b7af117d467b58374797691a6438d3e6b9e9cef800dfd5dced7f697a90cd"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/tokenizer_config.json",
+      "bytes": 775,
+      "sha256": "60ba2912bc6344c94bc16bbdec27fa1209409167b6f2fdf3cfe9e65462ea3967"
+    },
+    {
+      "path": "app/models/Xenova/clip-vit-base-patch32/vocab.json",
+      "bytes": 862328,
+      "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+    },
+    {
+      "path": "app/models/Xenova/mobilevit-small/config.json",
+      "bytes": 69990,
+      "sha256": "8e9d1b6f98ec638b7e83746cfda453800cb90e87a5255bca3cfb509de1b2061a"
+    },
+    {
+      "path": "app/models/Xenova/mobilevit-small/onnx/model_quantized.onnx",
+      "bytes": 6303767,
+      "sha256": "a23d400ab0892bff1edf875b2ff40a99b6e83ee975c0339bbc9cc9cb437c3d8a"
+    },
+    {
+      "path": "app/models/Xenova/mobilevit-small/preprocessor_config.json",
+      "bytes": 403,
+      "sha256": "1b6e9d83ef7410bcbd1b41e7a14e7d1c8eaa36d4abbdb2bc03db5794576fb6ec"
+    }
+  ]
+}
