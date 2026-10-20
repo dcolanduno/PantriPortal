@@ -2,12 +2,13 @@
 
 Kitchen and home inventory, recipes, meal planning and grocery shopping, with household accounts and permission-controlled administration.
 
-The current application version is **0.10.0**, published at [www.pantriportal.com](https://www.pantriportal.com/). This repository contains the maintained source, assets, tests, setup tools and documentation. Pushing to GitHub does not automatically deploy the website.
+The current application version is **0.10.1**. The production site is [www.pantriportal.com](https://www.pantriportal.com/). This repository contains the maintained source, assets, tests, setup tools and documentation. Pushing to GitHub does not automatically deploy the website.
 
 This GitHub repository is the source of truth for development and production. Changes are tested, committed and pushed before deploying the matching Git commit. Release artifacts record that commit and file hashes; see [deployment workflow](deployment/README.md) and [working agreement](AGENTS.md).
 
 ## Features
 
+- Compact navigation: Home, Organize (Inventory, Recipes and Locations), Plan & shop, and Account. Administration appears under Account only for users with administrative permissions. Home inventory mode hides the kitchen recipe link. Menus support keyboard Escape, outside-click dismissal and mobile layouts.
 - Kitchen and Home inventory modes, storage locations, quantities and custom Home sections.
 - Barcode scanning, package text recognition and browser photo matching.
 - Product photos, uploads and three locally generated alternative image choices.

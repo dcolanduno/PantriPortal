@@ -509,7 +509,7 @@ class Handler(BaseHTTPRequestHandler):
   if p.startswith('/web-assets/assets/'):
    name=p.removeprefix('/web-assets/assets/')
    if re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}',name):allowed[p]='web-assets/assets/'+name
-  allowed.update({'/kitchen.js':'kitchen.js','/kitchen.css':'kitchen.css','/admin.js':'admin.js','/home-sections.js':'home-sections.js','/admin.css':'admin.css','/migration.js':'migration.js','/bootstrap.js':'bootstrap.js','/mode-data.js':'mode-data.js','/modes.js':'modes.js','/manifest.webmanifest':'manifest.webmanifest','/sw.js':'sw.js','/favicon.ico':'favicon.ico'})
+  allowed.update({'/navigation.js':'navigation.js','/kitchen.js':'kitchen.js','/kitchen.css':'kitchen.css','/admin.js':'admin.js','/home-sections.js':'home-sections.js','/admin.css':'admin.css','/migration.js':'migration.js','/bootstrap.js':'bootstrap.js','/mode-data.js':'mode-data.js','/modes.js':'modes.js','/manifest.webmanifest':'manifest.webmanifest','/sw.js':'sw.js','/favicon.ico':'favicon.ico'})
   for name in ['config.json','preprocessor_config.json','onnx/model_quantized.onnx']:
    rel='models/Xenova/mobilevit-small/'+name;allowed['/'+rel]=rel
   for name in ['config.json','preprocessor_config.json','tokenizer.json','tokenizer_config.json','special_tokens_map.json','merges.txt','vocab.json','onnx/model_quantized.onnx']:
@@ -554,7 +554,7 @@ class Handler(BaseHTTPRequestHandler):
   if self.command=='GET' and self.static(p):return
   if p=='/api/health' and self.command=='GET':
    with db() as c:c.execute('SELECT 1')
-   return self.send(200,{'status':'ok','version':'0.10.0'})
+   return self.send(200,{'status':'ok','version':'0.10.1'})
   if p=='/api/features' and self.command=='GET':
    from local_images import ready
    return self.send(200,{'local_images':ready()})

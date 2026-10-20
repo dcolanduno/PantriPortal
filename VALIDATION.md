@@ -1,4 +1,10 @@
-# Pantry Portal 0.5 — implementation and validation
+# Pantry Portal — implementation and validation
+
+## 0.10.1 navigation update (October 20, 2026)
+
+Renamed Overview to Home and grouped Inventory, Recipes and Locations under Organize. Account contains personal/household links and permission-controlled Administration. Explicit hidden-control styling fixes component display rules overriding hidden attributes. Backend administrative authorization remains enforced.
+
+All 35 Python and six JavaScript tests passed. Browser checks used an isolated temporary database: guests see sign-in only under Account; ordinary users (including household owners) do not see Administration; administrators can open the admin center. Inventory navigation closes the menu, and Home inventory mode hides Recipes. Native disclosure menus provide keyboard and touch controls with Escape dismissal.
 
 Date: October 16, 2026. Scope: continued implementation in the existing Pantriportal project, followed by authorized production deployment.
 

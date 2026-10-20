@@ -195,3 +195,20 @@ body[data-mode=home] .hero{background:#e6f4f5;color:var(--ink)}body[data-mode=ho
  .nav button{flex:1 1 0;min-width:0;gap:3px;padding:8px 3px;font-size:11px}
  .nav button svg{width:17px;height:17px;flex:0 0 17px}
 }
+/* Hidden controls must stay hidden even when component rules set display:flex. */
+html [hidden]{display:none!important}
+.sidebar .nav{overflow:visible;position:relative;gap:12px;justify-content:center;flex-wrap:nowrap}
+.nav-dropdown{position:relative;flex:0 1 auto;min-width:0}
+.nav-dropdown summary{display:flex;align-items:center;justify-content:center;gap:9px;padding:14px 22px;border-radius:999px;color:#625e71;font-size:18px;font-weight:650;cursor:pointer;list-style:none;white-space:nowrap}
+.nav-dropdown summary::-webkit-details-marker{display:none}
+.nav-dropdown summary:hover,.nav-dropdown summary.active,.nav-dropdown[open]>summary{background:var(--mint);color:var(--green)}
+.nav-dropdown summary:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+.nav .nav-panel{position:absolute;top:calc(100% + 8px);left:0;z-index:50;min-width:240px;max-width:min(310px,calc(100vw - 24px));padding:8px;border:1px solid var(--line);border-radius:16px;background:var(--white,#fff);box-shadow:0 12px 34px #1b34342b}
+.nav-account .nav-panel{right:0;left:auto}
+.sidebar .nav .nav-panel button{display:flex;justify-content:flex-start;width:100%;min-height:46px;flex:none;gap:9px;margin:2px 0;padding:12px 14px;font-size:16px;text-align:left;border-radius:10px;white-space:normal}
+.nav .nav-panel button.active::after{display:none}
+.nav .nav-panel button:focus-visible{outline:3px solid var(--green);outline-offset:-3px}
+.sidebar .nav>button{flex:0 1 auto;min-width:0}
+@media(max-width:900px){.sidebar .nav{gap:5px;justify-content:space-between}.sidebar .nav>button,.sidebar .nav>.nav-dropdown{flex:1 1 0}.sidebar .nav>button,.nav-dropdown summary{font-size:15px;padding:12px 10px;gap:5px}.nav .nav-panel{min-width:220px}}
+@media(max-width:600px){.sidebar .nav{gap:2px}.sidebar .nav>button,.nav-dropdown summary{padding:12px 5px;font-size:13px;gap:4px}.nav .nav-panel{min-width:205px}.nav-dropdown summary>span{font-size:12px}}
+@media(max-width:600px){.topline{flex-wrap:wrap}.topline>div{min-width:0;max-width:100%}.topline h1{overflow-wrap:anywhere}}
