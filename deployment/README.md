@@ -2,6 +2,12 @@
 
 GitHub publication does not deploy this application. No deployment credentials, private keys, production databases, household photos or live environment files are included. Configuration examples need review; they are not an installer.
 
+## Source of truth
+
+All development and live application code must come from the GitHub repository. Commit, test and push changes before deployment. Build the release with `python tools/package_release.py --ref HEAD --output work/releases/pantriportal.zip`. The packager requires a clean checkout and a commit reachable from `origin/main`, and reads application files directly from that commit. It flattens `app/` into the deployed layout and includes `release-source.json` with the full commit and per-file hashes plus `RELEASE-SHA256SUMS`. Model weights and private data remain separately managed.
+
+Upload and extract the artifact into a fresh release directory, retain the existing verified models, and follow the activation checks below. Run `sha256sum --check RELEASE-SHA256SUMS` in that release. Verify the active release's `release-source.json` commit against GitHub and the tested development commit. A static follow-up must be committed and packaged through the same process. Never treat a GitHub push alone as evidence that the live site changed.
+
 ## Existing installation
 
 The existing site is https://www.pantriportal.com/. Releases are under `/opt/pantry-portal/releases/`; `/opt/pantry-portal/current` selects static files. Private runtime data is `/var/lib/pantry-portal`, shared generator models are `/opt/pantry-portal/image-models`, and loopback application/transfer ports are 8767/8766. Existing service names are `pantry-app`, `pantry-transfer` and `nginx`.
