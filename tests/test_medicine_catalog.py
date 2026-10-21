@@ -23,6 +23,14 @@ class CatalogParsingTests(unittest.TestCase):
   with patch.dict(os.environ,{'PANTRY_GOOGLE_PLACES_KEY':''}),patch.object(catalog,'fetch',side_effect=catalog.CatalogUnavailable):
    result=catalog.doctors('test')
   self.assertEqual(result['results'],[]);self.assertTrue(result['warnings'])
+ def test_doctor_titles_and_name_ranking(self):
+  fixture=[2,['1234567890','1234567891'],None,[['SMITH, ALICE','Family medicine','10 JOHN STREET','555-0100'],['SMITH, JOHN','Family medicine','20 EXAMPLE STREET','555-0101']]]
+  with patch.dict(os.environ,{'PANTRY_GOOGLE_PLACES_KEY':''}),patch.object(catalog,'fetch',return_value=fixture) as fetch:
+   result=catalog.doctors('Dr. John Smith, MD','Atlanta')
+  self.assertEqual(result['results'][0]['name'],'SMITH, JOHN')
+  self.assertEqual(urllib.parse.parse_qs(urllib.parse.urlsplit(fetch.call_args.args[0]).query)['terms'],['John Smith Atlanta'])
+  with patch.object(catalog,'fetch') as fetch:
+   self.assertEqual(catalog.doctors('Dr.')['results'],[]);fetch.assert_not_called()
  def test_google_key_is_header_only_and_registry_survives_failure(self):
   with patch.dict(os.environ,{'PANTRY_GOOGLE_PLACES_KEY':'synthetic-key'}),patch.object(catalog,'fetch',side_effect=[[0,[],None,[]],{'places':[{'displayName':{'text':'TEST CLINIC'},'formattedAddress':'TEST ADDRESS','nationalPhoneNumber':'555-0101','googleMapsUri':'https://maps.google.com/','attributions':[{'provider':'TEST attribution'}]}]}]) as fetch:
    result=catalog.doctors('test')

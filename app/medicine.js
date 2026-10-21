@@ -159,7 +159,7 @@ async function showDrugInfo(record){
     const l=r.label;detail.innerHTML=`<p><strong>${esc(l.source)}</strong> · Label effective date: ${esc(l.effective_time||'Not provided')}</p><p><a href="${esc(safeLink(l.source_url))}" target="_blank" rel="noopener noreferrer">Read complete source label on DailyMed</a></p>${l.sections.map(s=>`<details ${s.key==='boxed_warning'?'open':''}><summary>${esc(s.title)}</summary><p class="medicine-label-text">${esc(s.text)}</p></details>`).join('')}<p class="medicine-note">A missing section means it was not returned by this label source; it does not establish that a risk is absent. Reference dosage never replaces your prescription directions.</p>`;
    }catch(err){if(request===infoSerial&&e===epoch)detail.textContent=err.message}
   };
- }catch(err){if(serial===infoSerial&&e===epoch)body.textContent=err.message}
+ }catch(err){if(serial===infoSerial&&e===epoch)body.innerHTML=`<p>${esc(err.message)}</p><p><a target="_blank" rel="noopener noreferrer" href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=${encodeURIComponent(record.name)}">Search DailyMed for the complete label</a></p>`}
 }
 
 window.addEventListener('pantry-account-updated',()=>{epoch++;stopLookup();infoSerial++;$('#medicine-info').close();state=null;loading=false;$('#medicine-editor').close();$('#medicine-heading').replaceChildren();$('#medicine-list').replaceChildren();$('#medicine-search').value='';message('');if($('.section.active')?.id==='medicine')load()});

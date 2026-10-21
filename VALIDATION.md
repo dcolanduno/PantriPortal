@@ -1,5 +1,11 @@
 # Pantry Portal — implementation and validation
 
+## 0.12.0 Doctor and drug references (October 21, 2026)
+
+Integrated the merged GitHub doctor/medication search feature and reviewed it locally. Doctor searches use NIH/CMS public contact data; optional Google Places requires an operator-configured key, while Google Maps and Bing links remain available without it. Improved title normalization and name-match ordering. Medication names and strengths come from NIH RxTerms. Product-label choices use openFDA, prefer newer label dates, and expose source-linked uses, warnings, side effects and other returned sections without modifying prescribed directions. DailyMed remains available during reference-provider failures.
+
+All 50 Python tests and six JavaScript tests passed. Public live reference checks returned provider contacts, medication forms and product-label sections. Isolated browser checks verified suggestions, keyboard selection, doctor autofill, medication/strength selection, and label choice/readability. No real user's medical records were created or changed during testing. Search text is sent only to the documented reference providers, separate from private cabinet saves, and excluded from application audit/cache records.
+
 ## 0.11.0 Medicine area (October 21, 2026)
 
 Added per-account cabinets, owner-scoped prescriptions/refill information, prescriber contacts and time-zone-aware appointments. Household pharmacy reads the existing non-food Medicines and first aid inventory records without duplicating quantities. Records can be archived/restored; stale edits receive conflict errors. Personal medicine records have no application-administrator override. Medicine audit entries contain generic outcomes, not clinical fields or record IDs.
@@ -115,8 +121,8 @@ Isolated browser checks covered recipe creation, linked pantry ingredients, requ
 
 The final active symlink is `/opt/pantry-portal/releases/20261020T174843Z-0.10-kitchen-nav`, a static follow-up that wraps the expanded desktop menu. The application code and version remain 0.10.0; the preceding release is preserved. The new stylesheet hash was verified against HTTPS delivery.
 
-## Medicine reference search — October 21, 2026 (source verified; deployment pending)
+## Medicine reference search — October 21, 2026 (historical upstream source checks)
 
 Implemented doctor/medication search while typing, explicit doctor contact selection, RxTerms strength/form suggestions and per-prescription FDA product-label readers. Health version is 0.12.0. Forty-nine Python tests and six JavaScript tests passed, with JavaScript syntax and whitespace checks. Synthetic DOM checks covered stale-response suppression, arrow/Enter selection, doctor contact replacement, medication identity reset when name/strength changes, escaping provider label text and clearing reference content on account change. Live NIH queries returned medication names/paired strengths and provider addresses/phones. A live FDA Lipitor lookup returned one matching candidate and 33 full text sections, including adverse reactions.
 
-No production data was accessed or changed for these tests. SSH to the deployment server is unreachable from this session; production activation, release hashes, services, backups and live feature behavior are not verified. A GitHub source push does not deploy this application. The optional Google Places adapter was tested with synthetic responses; a production Places credential/billing configuration was not provisioned or verified. Bing support is a manual search link. Reference requests are independent of cabinet saves and exclude account identity, notes, directions, prescription numbers and other private record fields.
+No production data was accessed or changed for those upstream tests. That session could not reach the deployment server by SSH, so it did not verify production activation, release hashes, services, backups or live feature behavior. A GitHub source push does not deploy this application. The optional Google Places adapter was tested with synthetic responses; a production Places credential/billing configuration was not provisioned or verified. Bing support is a manual search link. Reference requests are independent of cabinet saves and exclude account identity, notes, directions, prescription numbers and other private record fields.

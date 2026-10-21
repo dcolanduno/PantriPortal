@@ -1,5 +1,5 @@
 """Public reference lookups. Never send cabinet records or cache search terms to disk."""
-import json,os,re,urllib.request,urllib.parse,urllib.error
+import http.client,json,os,re,urllib.request,urllib.parse,urllib.error
 
 class CatalogUnavailable(Exception):pass
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -15,12 +15,15 @@ def fetch(url,data=None,headers=None):
  except urllib.error.HTTPError as e:
   if e.code==404:return {}
   raise CatalogUnavailable() from None
- except (OSError,ValueError):raise CatalogUnavailable() from None
+ except (OSError,ValueError,http.client.HTTPException):raise CatalogUnavailable() from None
 
 def ctss(table,term,**params):
  return fetch('https://clinicaltables.nlm.nih.gov/api/'+table+'/v3/search?'+urllib.parse.urlencode({'terms':term,'maxList':8,**params}))
 def doctors(term,near=''):
+ term=re.sub(r'^\s*(?:dr\.?|doctor)(?:\s+|$)','',term,flags=re.I)
+ term=re.sub(r',\s*(?:m\.?d\.?|d\.?o\.?)\s*$','',term,flags=re.I).strip()
  results=[];warnings=[]
+ if len(term)<2:return {'results':[],'warnings':['Enter the provider name after the title.'],'google_enabled':bool(os.environ.get('PANTRY_GOOGLE_PLACES_KEY',''))}
  try:
   d=ctss('npi_idv',(term+' '+near).strip(),df='name.full,provider_type,addr_practice.full,addr_practice.phone',ef='NPI')
   for n,row in zip(d[1],d[3]):
@@ -34,6 +37,9 @@ def doctors(term,near=''):
    for p in d.get('places',[]):
     results.append(dict(name=p.get('displayName',{}).get('text',''),specialty='',practice='',address=p.get('formattedAddress',''),phone=p.get('nationalPhoneNumber',''),source='Google Maps',source_url=p.get('googleMapsUri','https://maps.google.com/'),attributions=[a.get('provider','') for a in p.get('attributions',[])]))
   except (CatalogUnavailable,KeyError,TypeError):warnings.append('Google Maps search is unavailable. Registry results remain available.')
+ words=re.findall(r'\w+',term.casefold())
+ # The directory searches addresses too: put actual name matches ahead of street-name matches.
+ results.sort(key=lambda r:-sum(any(token.startswith(w) for token in re.findall(r'\w+',r['name'].casefold())) for w in words))
  return {'results':results,'warnings':warnings,'google_enabled':bool(key)}
 
 def drugs(term):
@@ -47,7 +53,7 @@ def drugs(term):
  return {'results':out,'warnings':[]}
 
 def fda_query(search,limit=12):
- d=fetch('https://api.fda.gov/drug/label.json?'+urllib.parse.urlencode({'search':search,'limit':limit}))
+ d=fetch('https://api.fda.gov/drug/label.json?'+urllib.parse.urlencode({'search':search,'limit':limit,'sort':'effective_time:desc'}))
  return d.get('results',[])
 def literal(s):return '"'+s.replace('\\','\\\\').replace('"','\\"')+'"'
 def label_options(name,rxcui):
