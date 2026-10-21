@@ -4,7 +4,7 @@
  const home=nav.querySelector('[data-page="dashboard"]');home.textContent='⌂ Home';
  function dropdown(id,label){const d=document.createElement('details');d.className='nav-dropdown';d.id=id;d.innerHTML=`<summary aria-controls="${id}-panel" aria-expanded="false">${label}<span aria-hidden="true">⌄</span></summary><div class="nav-panel" id="${id}-panel"></div>`;return d}
  const organize=dropdown('organize-menu','Organize'),account=dropdown('account-menu','Account');
- for(const page of ['inventory','recipes','locations'])organize.lastElementChild.append(nav.querySelector('[data-page="'+page+'"]'));
+ for(const page of ['inventory','recipes','locations','medicine'])organize.lastElementChild.append(nav.querySelector('[data-page="'+page+'"]'));
  account.classList.add('nav-account');
  for(const id of ['my-dashboard-nav','household-nav','admin-nav'])account.lastElementChild.append(document.getElementById(id));
  const signIn=document.createElement('button');signIn.type='button';signIn.id='nav-sign-in';signIn.textContent='Sign in / create household';signIn.onclick=()=>bridge.openAccount();account.lastElementChild.append(signIn);

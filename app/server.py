@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS home_locations(home_id TEXT,mode TEXT,name TEXT COLLA
  DB.chmod(0o600)
  ops.initialize(globals())
  kitchen.initialize(globals())
+ medicine.initialize(globals())
 def limit(key,n,seconds):
  with LOCK:
   t=time.time();q=RATE[key]
@@ -509,7 +510,7 @@ class Handler(BaseHTTPRequestHandler):
   if p.startswith('/web-assets/assets/'):
    name=p.removeprefix('/web-assets/assets/')
    if re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}',name):allowed[p]='web-assets/assets/'+name
-  allowed.update({'/navigation.js':'navigation.js','/kitchen.js':'kitchen.js','/kitchen.css':'kitchen.css','/admin.js':'admin.js','/home-sections.js':'home-sections.js','/admin.css':'admin.css','/migration.js':'migration.js','/bootstrap.js':'bootstrap.js','/mode-data.js':'mode-data.js','/modes.js':'modes.js','/manifest.webmanifest':'manifest.webmanifest','/sw.js':'sw.js','/favicon.ico':'favicon.ico'})
+  allowed.update({'/medicine.js':'medicine.js','/navigation.js':'navigation.js','/kitchen.js':'kitchen.js','/kitchen.css':'kitchen.css','/admin.js':'admin.js','/home-sections.js':'home-sections.js','/admin.css':'admin.css','/migration.js':'migration.js','/bootstrap.js':'bootstrap.js','/mode-data.js':'mode-data.js','/modes.js':'modes.js','/manifest.webmanifest':'manifest.webmanifest','/sw.js':'sw.js','/favicon.ico':'favicon.ico'})
   for name in ['config.json','preprocessor_config.json','onnx/model_quantized.onnx']:
    rel='models/Xenova/mobilevit-small/'+name;allowed['/'+rel]=rel
   for name in ['config.json','preprocessor_config.json','tokenizer.json','tokenizer_config.json','special_tokens_map.json','merges.txt','vocab.json','onnx/model_quantized.onnx']:
@@ -554,7 +555,7 @@ class Handler(BaseHTTPRequestHandler):
   if self.command=='GET' and self.static(p):return
   if p=='/api/health' and self.command=='GET':
    with db() as c:c.execute('SELECT 1')
-   return self.send(200,{'status':'ok','version':'0.10.1'})
+   return self.send(200,{'status':'ok','version':'0.11.0'})
   if p=='/api/features' and self.command=='GET':
    from local_images import ready
    return self.send(200,{'local_images':ready()})
@@ -608,6 +609,7 @@ class Handler(BaseHTTPRequestHandler):
    with db() as c:c.execute('DELETE FROM sessions WHERE token=?',(u['token'],))
    return self.send(200,{'ok':True},{'Set-Cookie':'pp_account=; Path=/'+COOKIE_SECURE+'; HttpOnly; SameSite=Strict; Max-Age=0'})
   if kitchen.handle(self,u,p,q):return
+  if medicine.handle(self,u,p,q):return
   if p=='/api/home' and self.command=='GET':
    with db() as c:
     members=c.execute('SELECT id,name,home_role,approved,created FROM users WHERE home_id=? ORDER BY approved DESC,created',(u['home_id'],)).fetchall()
@@ -971,11 +973,16 @@ class Handler(BaseHTTPRequestHandler):
     if hasattr(self,'_cached_body'):
      target=self._cached_body.get('id')
      if isinstance(target,str) and re.fullmatch('[a-f0-9]{24,64}',target):self.audit_target=target
-    ops.append_event(self.actor,self.command,path,action,target=self.audit_target or (match.group(1) if match else ''),status=self.response_status,code=self.error_code,reference=self.request_id,duration=(time.monotonic()-started)*1000,message=self.error_message)
+    if path.startswith('/api/medicine/'):
+     # Record operational outcomes, never patient fields, record IDs or clinical values.
+     path='/api/medicine';action=self.command.lower()+'.medicine';target='';message='Medicine request failed.' if self.error_code else ''
+    else:target=self.audit_target or (match.group(1) if match else '');message=self.error_message
+    ops.append_event(self.actor,self.command,path,action,target=target,status=self.response_status,code=self.error_code,reference=self.request_id,duration=(time.monotonic()-started)*1000,message=message)
    try:self.flush_response()
    except (BrokenPipeError,ConnectionResetError):pass
  do_GET=do_POST=do_PUT=do_PATCH=do_DELETE=handle_request
 import admin_ops as ops
 import kitchen_ops as kitchen
+import medicine_ops as medicine
 if __name__=='__main__':
  init();print('Pantry Portal ready at http://127.0.0.1:'+str(PORT),flush=True);ThreadingHTTPServer(('127.0.0.1',PORT),Handler).serve_forever()

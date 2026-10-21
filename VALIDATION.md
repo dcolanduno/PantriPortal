@@ -1,5 +1,11 @@
 # Pantry Portal — implementation and validation
 
+## 0.11.0 Medicine area (October 21, 2026)
+
+Added per-account cabinets, owner-scoped prescriptions/refill information, prescriber contacts and time-zone-aware appointments. Household pharmacy reads the existing non-food Medicines and first aid inventory records without duplicating quantities. Records can be archived/restored; stale edits receive conflict errors. Personal medicine records have no application-administrator override. Medicine audit entries contain generic outcomes, not clinical fields or record IDs.
+
+All 41 Python tests and six JavaScript tests passed. Six new integration tests exercise same-household administrator isolation, doctor ownership, prescriptions, appointment time zones and invalid dates, cabinet naming, shared stock identity/updates, disabled-user filtering, edit conflicts, CSRF, unauthenticated access and log privacy. Desktop/mobile browser checks used only synthetic data in an isolated database. See docs/MEDICINE.md for workflow and operational privacy boundaries.
+
 ## 0.10.1 navigation update (October 20, 2026)
 
 Renamed Overview to Home and grouped Inventory, Recipes and Locations under Organize. Account contains personal/household links and permission-controlled Administration. Explicit hidden-control styling fixes component display rules overriding hidden attributes. Backend administrative authorization remains enforced.
