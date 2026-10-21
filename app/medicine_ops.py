@@ -1,11 +1,12 @@
 """Owner-only medicine cabinets. Shared pharmacy items remain ordinary inventory."""
 import datetime,hashlib,json,math,re,secrets,time,types
+import medicine_catalog as catalog
 from zoneinfo import ZoneInfo,ZoneInfoNotFoundError
 
 _api=None
 FIELDS={
  'doctor':{'name':160,'specialty':160,'practice':200,'phone':80,'email':200,'address':500,'notes':1500},
- 'prescription':{'name':160,'strength':120,'directions':1500,'unit':60,'pharmacy':200,'pharmacy_phone':80,'pharmacy_address':500,'rx_number':120,'notes':1500},
+ 'prescription':{'catalog_name':160,'rxcui':20,'name':160,'strength':120,'directions':1500,'unit':60,'pharmacy':200,'pharmacy_phone':80,'pharmacy_address':500,'rx_number':120,'notes':1500},
  'appointment':{'name':160,'location':500,'phone':80,'notes':1500},
 }
 
@@ -49,6 +50,7 @@ def clean(d,u,c):
   if doctor and not c.execute("SELECT 1 FROM medicine_records WHERE id=? AND user_id=? AND kind='doctor'",(doctor,u['user_id'])).fetchone():fail('Choose a doctor from your own cabinet.')
   out['doctor_id']=doctor
  if kind=='prescription':
+  if out['rxcui'] and not re.fullmatch(r'\d{1,12}',out['rxcui']):fail('Choose a valid medication strength.')
   for key in ['last_filled','next_refill','expires']:out[key]=date(d.get(key,''),key.replace('_',' '))
   for key in ['quantity','refills_remaining']:out[key]=number(d.get(key),key.replace('_',' '),key=='refills_remaining')
  if kind=='appointment':
@@ -65,6 +67,24 @@ def clean(d,u,c):
 def handle(h,u,path,q):
  if not path.startswith('/api/medicine/'):return False
  method=h.command;tail=path.removeprefix('/api/medicine/')
+ if tail in ('search/doctors','search/drugs','drug-labels','drug-label') and method=='POST':
+  _api.limit('medicine-catalog:'+u['user_id'],60,60)
+  d=h.body()
+  try:
+   if tail.startswith('search/'):
+    term=text(d.get('term',''),'search text',160,True)
+    if len(term)<3:fail('Type at least three characters.')
+    result=catalog.doctors(term,text(d.get('near',''),'city or ZIP',100)) if tail.endswith('doctors') else catalog.drugs(term)
+   elif tail=='drug-labels':
+    name=text(d.get('name',''),'medicine name',160,True);rx=text(d.get('rxcui',''),'medication identifier',20)
+    if rx and not re.fullmatch(r'\d{1,12}',rx):fail('Invalid medication identifier.')
+    result=catalog.label_options(name,rx)
+   else:
+    lid=text(d.get('id',''),'label identifier',36,True)
+    if not re.fullmatch(r'[a-fA-F0-9-]{36}',lid):fail('Invalid label identifier.')
+    result=catalog.label_detail(lid)
+  except catalog.CatalogUnavailable:fail('Reference service unavailable. Try again later; manual entry and saved records still work.',502)
+  h.send(200,result);return True
  if tail=='state' and method=='GET':
   with _api.db() as c:
    cabinet=c.execute('SELECT body FROM medicine_cabinets WHERE user_id=?',(u['user_id'],)).fetchone()

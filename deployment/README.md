@@ -33,3 +33,7 @@ The existing production `dcolanduno` account is pinned by immutable ID in privat
 Review data compatibility before rolling code back. An older release may ignore new permission, recipe or purchase semantics. Do not overwrite later user purchases or audit records with an earlier database without an explicit recovery decision. Preserve signing key/checkpoint with the corresponding database snapshot.
 
 Install `requirements-dev.txt` to regenerate the handbook with `python tools/build_error_guide.py`; visually review its Word layout before replacing the shipped guide. Private incident and recovery files are not source artifacts.
+
+## Medicine reference search (0.12.0)
+
+Deploy `medicine_catalog.py` alongside `medicine_ops.py` and `medicine.js` from the same tested release. Reference services require outbound HTTPS to `clinicaltables.nlm.nih.gov` and `api.fda.gov`. Optional Google Places requires `places.googleapis.com` and a private `PANTRY_GOOGLE_PLACES_KEY` service environment setting; never commit it or include it in release metadata. Without that setting the NIH doctor directory remains available. Existing `/api/` proxying and `/medicine.js` static exposure cover these changes. No additional schema tables or packages are introduced; the two optional prescription identity fields are additive JSON properties. Restart the Python application after release activation and check health version 0.12.0 plus the affected signed-in forms.
