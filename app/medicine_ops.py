@@ -1,6 +1,7 @@
 """Owner-only medicine cabinets. Shared pharmacy items remain ordinary inventory."""
 import datetime,hashlib,json,math,re,secrets,time,types
 import medicine_catalog as catalog
+import medicine_maps as maps
 from zoneinfo import ZoneInfo,ZoneInfoNotFoundError
 
 _api=None
@@ -67,6 +68,13 @@ def clean(d,u,c):
 def handle(h,u,path,q):
  if not path.startswith('/api/medicine/'):return False
  method=h.command;tail=path.removeprefix('/api/medicine/')
+ if tail=='office-map' and method=='POST':
+  _api.limit('medicine-maps:'+u['user_id'],30,60)
+  rid=text(h.body().get('id',''),'doctor selection',24,True)
+  with _api.db() as c:row=c.execute("SELECT body FROM medicine_records WHERE id=? AND user_id=? AND kind='doctor'",(rid,u['user_id'])).fetchone()
+  if not row:fail('Doctor not found.',404)
+  address=json.loads(row['body']).get('address','').strip()
+  h.send(200,maps.office_map(address) if address else {'available':False,'reason':'missing_address'});return True
  if tail in ('search/doctors','search/drugs','drug-labels','drug-label') and method=='POST':
   _api.limit('medicine-catalog:'+u['user_id'],60,60)
   d=h.body()

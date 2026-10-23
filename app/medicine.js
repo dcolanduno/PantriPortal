@@ -2,6 +2,8 @@
 'use strict';
 const bridge=window.PantryAdminBridge;
 let state=null,epoch=0,tab='prescription',editing=null,loading=false;
+let officeObserver=null;
+const officeCache=new Map();
 const labels={prescription:'Prescriptions',doctor:'Doctors',appointment:'Appointments',pharmacy:'Household pharmacy'};
 const fields={
  doctor:[['name','Doctor name','text',true],['specialty','Specialty'],['practice','Practice / clinic'],['phone','Phone','tel'],['email','Email','email'],['address','Address','textarea'],['notes','Notes','textarea']],
@@ -11,6 +13,7 @@ const fields={
 const style=document.createElement('style');style.textContent=`
 .medicine-lookup [role=listbox]{max-height:300px;overflow:auto;border:1px solid #c7c4ce;border-radius:9px;background:white}.medicine-lookup [role=option]{padding:12px;border-bottom:1px solid #ddd;cursor:pointer}.medicine-lookup [role=option]:hover,.medicine-lookup [aria-selected=true]{background:#efe8f7}.medicine-lookup [role=option] span,.medicine-lookup [role=option] small{display:block;font-weight:400;margin-top:4px}#medicine-info select{width:100%;padding:10px;font:inherit;margin:10px 0}.medicine-label-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}#medicine-info details{padding:12px 0;border-bottom:1px solid #ddd}#medicine-info summary{cursor:pointer;font-weight:600}.medicine-area .mode-banner{display:none}.medicine-banner{border:1px solid #ccc0e4;border-radius:20px;padding:22px;background:linear-gradient(115deg,#f0e8fb,#e6f4f5);margin-bottom:20px}.medicine-banner h2{margin:0;color:#583374}.medicine-banner p{margin:8px 0}.medicine-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.medicine-tabs button[aria-pressed=true]{background:#583374;color:white}.medicine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:16px}.medicine-card{border:1px solid var(--line);border-radius:16px;padding:18px;background:var(--white,#fff);overflow-wrap:anywhere}.medicine-card h3{margin:0 0 12px;font-size:22px}.medicine-card dl{display:grid;grid-template-columns:minmax(95px,1fr) minmax(0,2fr);gap:7px;margin:14px 0}.medicine-card dt{font-weight:600}.medicine-card dd{margin:0;white-space:pre-wrap}.medicine-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}.medicine-tools input[type=search]{flex:1;min-width:150px}.medicine-dialog{width:min(700px,calc(100vw - 24px));max-height:90vh;border:1px solid var(--line);border-radius:20px;padding:22px;overflow:auto}.medicine-dialog::backdrop{background:#15253680}.medicine-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.medicine-form label{display:flex;flex-direction:column;gap:6px;font-weight:600}.medicine-form input,.medicine-form select,.medicine-form textarea{width:100%;min-width:0;padding:11px;border:1px solid #c7c4ce;border-radius:9px;font:inherit}.medicine-form textarea{min-height:88px}.medicine-wide{grid-column:1/-1}.medicine-note{font-size:14px;color:#625e71}.medicine-error{color:#9a273e}.medicine-card .medicine-archived{font-weight:600;color:#625e71}@media(max-width:600px){.medicine-form{grid-template-columns:1fr}.medicine-card dl{grid-template-columns:1fr}.medicine-card dd{margin-bottom:5px}.medicine-dialog{padding:16px}}
 `;document.head.append(style);
+style.textContent+=`.medicine-office-map{margin:16px 0}.medicine-map-preview{display:block;position:relative;max-width:460px;min-height:185px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#edf2ed;color:var(--green);text-decoration:none}.medicine-map-preview:focus-visible{outline:3px solid var(--green);outline-offset:3px}.medicine-map-preview iframe{display:block;width:100%;height:185px;border:0;pointer-events:none}.medicine-map-placeholder{display:flex;min-height:185px;align-items:center;justify-content:center;padding:18px;text-align:center}.medicine-map-caption{display:block;font-size:14px;margin-top:8px}.medicine-map-credit{font-size:12px;margin:7px 0}.medicine-map-actions{display:flex;gap:12px;flex-wrap:wrap;font-size:14px}`;
 $('.nav').insertAdjacentHTML('beforeend','<button id="medicine-nav" data-page="medicine">✚ Medicine</button>');
 $('.main').insertAdjacentHTML('beforeend',`<section class="section" id="medicine"><div class="medicine-banner"><h2>✚ Medicine & pharmacy</h2><p>Your private medicine cabinet and your household’s everyday pharmacy supplies.</p><p class="medicine-note">Personal prescriptions, doctors and appointments are visible and editable only through your own account. Shared supplies stay in Home inventory.</p></div><div class="panel"><div id="medicine-heading"></div><nav class="medicine-tabs" aria-label="Medicine sections">${Object.entries(labels).map(([key,label])=>`<button type="button" class="secondary" data-medicine-tab="${key}">${label}</button>`).join('')}</nav><div class="medicine-tools"><input type="search" id="medicine-search" aria-label="Search medicine area" placeholder="Search this section"><label><input type="checkbox" id="medicine-archives"> Show archived</label><button class="secondary" id="medicine-reload">Refresh</button><button class="primary" id="medicine-add">Add prescription</button></div><p id="medicine-status" role="status"></p><div id="medicine-list" class="medicine-grid"></div></div></section>`);
 document.body.insertAdjacentHTML('beforeend',`<dialog id="medicine-editor" class="medicine-dialog" aria-labelledby="medicine-editor-title"><h2 id="medicine-editor-title"></h2><form id="medicine-form"><div id="medicine-fields" class="medicine-form"></div><p id="medicine-form-error" class="medicine-error" role="alert"></p><div class="medicine-tools"><button type="button" class="secondary" id="medicine-cancel">Cancel</button><button class="primary" type="submit" id="medicine-save">Save</button></div></form></dialog>`);
@@ -19,6 +22,36 @@ async function api(path='',method='GET',data){const e=epoch,r=await bridge.api('
 function message(s){$('#medicine-status').textContent=s}
 function doctor(id){return state?.records.find(r=>r.kind==='doctor'&&r.id===id)}
 function detail(label,value){return value===null||value===undefined||value===''?'':`<dt>${esc(label)}</dt><dd>${esc(String(value))}</dd>`}
+function officeMapCard(r){
+ if(r.kind!=='doctor')return '';
+ const address=(r.address||'').trim();
+ if(!address)return '<p class="medicine-note">Add an office address to show its map.</p>';
+ const query=encodeURIComponent(address),map='https://www.google.com/maps/search/?api=1&query='+query;
+ return `<section class="medicine-office-map" data-office-id="${r.id}" aria-label="Office location"><a class="medicine-map-preview" href="${esc(map)}" target="_blank" rel="noopener noreferrer" aria-label="Open office map for ${esc(address)} in a new tab"><span class="medicine-map-placeholder">Loading office map…</span></a><span class="medicine-map-caption">Office location · click the map to open Google Maps</span><div class="medicine-map-actions"><a href="${esc(map)}" target="_blank" rel="noopener noreferrer">Open full map ↗</a><a href="https://www.google.com/maps/dir/?api=1&destination=${query}" target="_blank" rel="noopener noreferrer">Get directions ↗</a></div><p class="medicine-map-credit">Map: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a> · Office address located by U.S. Census. Preview pins are approximate.</p></section>`;
+}
+function loadOfficeMaps(){
+ officeObserver?.disconnect();
+ const e=epoch;
+ async function loadMap(node){
+  officeObserver?.unobserve(node);
+  const record=state?.records.find(r=>r.kind==='doctor'&&r.id===node.dataset.officeId);if(!record)return;
+  const address=record.address.trim();
+  try{
+   let map=officeCache.get(address);
+   if(!map){map=await api('office-map','POST',{id:record.id});if(e!==epoch)return;officeCache.set(address,map)}
+   if(e!==epoch||!node.isConnected)return;
+   const preview=node.querySelector('.medicine-map-preview');
+   if(!map.available){preview.innerHTML='<span class="medicine-map-placeholder">📍 Open office location<br>Preview unavailable — use the full map or directions.</span>';return}
+   const lat=Number(map.latitude),lon=Number(map.longitude);
+   if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>85||Math.abs(lon)>180)throw new Error('Map unavailable');
+   const params=new URLSearchParams({bbox:[Math.max(-180,lon-.009),lat-.006,Math.min(180,lon+.009),lat+.006].join(','),layer:'mapnik',marker:lat+','+lon});
+   const frame=document.createElement('iframe');frame.title='Office location map';frame.src='https://www.openstreetmap.org/export/embed.html?'+params;frame.loading='lazy';frame.referrerPolicy='no-referrer';frame.tabIndex=-1;frame.setAttribute('aria-hidden','true');frame.setAttribute('sandbox','allow-scripts allow-same-origin');preview.replaceChildren(frame);
+   if(map.matched_address){const note=document.createElement('p');note.className='medicine-note';note.textContent='Mapped address: '+map.matched_address;node.append(note)}
+  }catch{if(e===epoch&&node.isConnected)node.querySelector('.medicine-map-preview').innerHTML='<span class="medicine-map-placeholder">📍 Open office location<br>Preview unavailable — use the full map or directions.</span>'}
+ }
+ if('IntersectionObserver' in window){officeObserver=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting)loadMap(entry.target)},{rootMargin:'0px'});for(const node of $$('#medicine .medicine-office-map'))officeObserver.observe(node)}
+ else for(const node of $$('#medicine .medicine-office-map'))loadMap(node);
+}
 function draw(){
  if(!state)return;
  const next=state.records.filter(r=>r.kind==='appointment'&&!r.archived&&new Date(r.starts_utc)>=new Date()).sort((a,b)=>a.starts_utc.localeCompare(b.starts_utc))[0];
@@ -35,9 +68,10 @@ function draw(){
   const names=Object.fromEntries(fields[r.kind].map(f=>[f[0],f[1]]));let details='';
   if(r.doctor_id){const d=doctor(r.doctor_id);details+=detail('Doctor',d?d.name+(d.archived?' (archived)':''):'Doctor unavailable');if(d){details+=detail('Doctor phone',d.phone);details+=detail('Doctor address',d.address)}}
   for(const [key,label] of Object.entries(names))if(key!=='name')details+=detail(label,r[key]);
-  return `<article class="medicine-card"><h3>${esc(r.name)}</h3>${r.archived?'<p class="medicine-archived">Archived</p>':''}<dl>${details}</dl>${r.kind==='prescription'?`<div class="medicine-drug-reference"><h4>Drug information</h4><p class="medicine-note">Uses, side effects, warnings, interactions and full product labeling.</p><button type="button" class="secondary" data-medicine-info="${r.id}">Read drug information</button></div>`:''}<div class="medicine-tools"><button type="button" class="secondary" data-medicine-edit="${r.id}">Edit ${r.kind}</button><button type="button" class="secondary" data-medicine-archive="${r.id}">${r.archived?'Restore':'Archive'}</button></div></article>`;
+  return `<article class="medicine-card"><h3>${esc(r.name)}</h3>${r.archived?'<p class="medicine-archived">Archived</p>':''}<dl>${details}</dl>${officeMapCard(r)}${r.kind==='prescription'?`<div class="medicine-drug-reference"><h4>Drug information</h4><p class="medicine-note">Uses, side effects, warnings, interactions and full product labeling.</p><button type="button" class="secondary" data-medicine-info="${r.id}">Read drug information</button></div>`:''}<div class="medicine-tools"><button type="button" class="secondary" data-medicine-edit="${r.id}">Edit ${r.kind}</button><button type="button" class="secondary" data-medicine-archive="${r.id}">${r.archived?'Restore':'Archive'}</button></div></article>`;
  }).join('')||`<p>No ${esc(labels[tab].toLowerCase())} ${term?'match your search':'yet'}.</p>`;
  if(tab==='pharmacy'){$('#medicine-list').insertAdjacentHTML('beforeend','<div class="medicine-wide"><button type="button" class="secondary" id="medicine-manage-stock">Manage shared stock in Home inventory</button></div>');message('OTC medicines and supplies in the Medicines and first aid Home section appear here. Stock is counted once. Keep personal prescriptions in your private cabinet.')}else message('');
+ loadOfficeMaps();
 }
 async function load(){
  if(!bridge.current()){$('#medicine-heading').innerHTML='<p>Sign in to open your private cabinet.</p>';$('#medicine-list').replaceChildren();message('');return}
@@ -162,5 +196,5 @@ async function showDrugInfo(record){
  }catch(err){if(serial===infoSerial&&e===epoch)body.innerHTML=`<p>${esc(err.message)}</p><p><a target="_blank" rel="noopener noreferrer" href="https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=${encodeURIComponent(record.name)}">Search DailyMed for the complete label</a></p>`}
 }
 
-window.addEventListener('pantry-account-updated',()=>{epoch++;stopLookup();infoSerial++;$('#medicine-info').close();state=null;loading=false;$('#medicine-editor').close();$('#medicine-heading').replaceChildren();$('#medicine-list').replaceChildren();$('#medicine-search').value='';message('');if($('.section.active')?.id==='medicine')load()});
+window.addEventListener('pantry-account-updated',()=>{epoch++;officeObserver?.disconnect();officeCache.clear();stopLookup();infoSerial++;$('#medicine-info').close();state=null;loading=false;$('#medicine-editor').close();$('#medicine-heading').replaceChildren();$('#medicine-list').replaceChildren();$('#medicine-search').value='';message('');if($('.section.active')?.id==='medicine')load()});
 })();

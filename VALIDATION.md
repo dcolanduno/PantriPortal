@@ -1,5 +1,13 @@
 # Pantry Portal — implementation and validation
 
+## 0.12.1 Doctor office maps (October 23, 2026)
+
+Added lazy-loaded OpenStreetMap previews to saved doctor cards. A thumbnail click and full-map link open Google Maps; a directions link pre-fills the office destination. The free U.S. Census geocoder receives only the owner's saved office address. Unmatched or ambiguous locations and provider failures retain the full-map/directions links without inventing a pin. No paid credentials or schema migration is required.
+
+Three new integration tests cover owner/admin isolation, CSRF, minimal outbound payloads, address edits, bounded in-memory reuse, missing/ambiguous/invalid locations, provider failures and absence of address/record ID/notes in audit logs. Preview rendering is checked with a synthetic account and a public example address; no real medical records are created or changed for testing.
+
+All 53 Python and six JavaScript tests passed. Browser checks verified map tiles and attribution, a 390px layout without horizontal overflow, and a thumbnail opening the correct address in a separate Google Maps tab with its Directions interface available.
+
 ## 0.12.0 Doctor and drug references (October 21, 2026)
 
 Integrated the merged GitHub doctor/medication search feature and reviewed it locally. Doctor searches use NIH/CMS public contact data; optional Google Places requires an operator-configured key, while Google Maps and Bing links remain available without it. Improved title normalization and name-match ordering. Medication names and strengths come from NIH RxTerms. Product-label choices use openFDA, prefer newer label dates, and expose source-linked uses, warnings, side effects and other returned sections without modifying prescribed directions. DailyMed remains available during reference-provider failures.

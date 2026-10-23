@@ -2,13 +2,14 @@
 
 Kitchen and home inventory, recipes, meal planning and grocery shopping, with household accounts and permission-controlled administration.
 
-The current application version is **0.12.0**. The production site is [www.pantriportal.com](https://www.pantriportal.com/). This repository contains the maintained source, assets, tests, setup tools and documentation. Pushing to GitHub does not automatically deploy the website.
+The current application version is **0.12.1**. The production site is [www.pantriportal.com](https://www.pantriportal.com/). This repository contains the maintained source, assets, tests, setup tools and documentation. Pushing to GitHub does not automatically deploy the website.
 
 This GitHub repository is the source of truth for development and production. Changes are tested, committed and pushed before deploying the matching Git commit. Release artifacts record that commit and file hashes; see [deployment workflow](deployment/README.md) and [working agreement](AGENTS.md).
 
 ## Features
 
 - Search-as-you-type doctor contacts (NIH/CMS, plus optional configured Google Maps), medication names/strengths (NIH RxTerms), and a product-label reader for uses, side effects and warnings (openFDA).
+- Saved doctor cards include free office map previews, a full Google Maps link and directions.
 - Medicine area with owner-only personal cabinets, prescriptions and refill details, doctor contacts, appointments with time zones, and household pharmacy supplies linked to Home inventory. See [Medicine guide and access boundaries](docs/MEDICINE.md).
 - Compact navigation: Home, Organize (Inventory, Recipes and Locations), Plan & shop, and Account. Administration appears under Account only for users with administrative permissions. Home inventory mode hides the kitchen recipe link. Menus support keyboard Escape, outside-click dismissal and mobile layouts.
 - Kitchen and Home inventory modes, storage locations, quantities and custom Home sections.
@@ -60,7 +61,7 @@ python -m unittest discover -s tests -p 'test*.py'
 node --test tests/bootstrap.test.cjs tests/modes.test.cjs
 ```
 
-Tests use isolated temporary databases and mock image generation. They do not require model weights or production credentials. The current application passed 50 Python tests and six JavaScript tests. Physical phone cameras and real-store conditions remain separate validation tasks. GitHub Actions runs the tests without deploying the site.
+Tests use isolated temporary databases and mock image generation. They do not require model weights or production credentials. The current application passed 53 Python tests and six JavaScript tests. Physical phone cameras and real-store conditions remain separate validation tasks. GitHub Actions runs the tests without deploying the site.
 
 ## Project files
 

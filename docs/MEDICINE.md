@@ -16,6 +16,14 @@ The **Household pharmacy** tab shows non-food items in the **Medicines and first
 
 These are the same inventory records, not copies. Changing stock in Home inventory changes what Medicine displays after Refresh. Only approved, enabled household members' stock appears. Existing inventory editing permissions still apply. No existing shared record is automatically converted into a private prescription; enter personal prescription details in your cabinet.
 
+## Doctor office maps
+
+Saved doctor cards with an office address show a small OpenStreetMap preview when scrolled into view. Click the preview or **Open full map** to open that address in Google Maps in a new tab/window. **Get directions** opens Google's directions interface with the destination filled; choose your starting point there. The application does not request your current location.
+
+Previews use the free U.S. Census address geocoder and OpenStreetMap's official embedded map, without a paid API key. Census coverage is the United States, Puerto Rico and U.S. Island Areas. Pins are approximate address-range locations. An unmatched, ambiguous or unsupported address, a blocked map frame, or an unavailable service can prevent the preview; full map and directions links still work for the entered address. Add or correct the doctor's office address using Edit doctor.
+
+Only the office address is sent to the Census service; map tiles receive coordinates. Opening the full map sends the office address to Google Maps. The account, doctor's name, prescription details and notes are not included. The owner-only `/api/medicine/office-map` POST route reads the saved address on the server and ignores client-supplied addresses. Search strings and coordinates are not written to application logs or persistent caches. A bounded, temporary in-memory geocoding cache reduces repeated lookups. It expires after 24 hours for matched addresses or one minute for unavailable results. No personal record or database schema is changed by viewing a map. Existing medicine ownership protections still apply.
+
 ## Access and operations
 
 The application only returns or modifies a cabinet, prescription, doctor or appointment for its signed-in owner. There is no household-member or application-administrator override for these personal records. Shared stock and private prescriptions use separate tables and routes. Owner IDs supplied by a client cannot transfer ownership. CSRF and origin checks apply to changes.
