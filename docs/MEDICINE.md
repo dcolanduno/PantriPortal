@@ -55,3 +55,18 @@ Reference API documentation:
 - https://clinicaltables.nlm.nih.gov/apidoc/rxterms/v3/doc.html
 - https://open.fda.gov/apis/drug/label/
 - https://developers.google.com/maps/documentation/places/web-service/text-search
+
+
+## Scan your own prescription bottle
+
+In Medicine, choose **Scan prescription label**, then **Take label photo** on a phone or **Choose label photo**. Use one bottle per scan. **Add another photo of this bottle** reads the other side of a curved label. Supported browsers use the phone's native camera/file picker; actual camera availability and OCR accuracy vary by browser, device and label quality.
+
+Barcode decoding (ZXing) and English OCR (Tesseract.js) run in the browser. The first scan downloads recognition runtime/language files. Label photos, complete recognized text and raw barcodes are never uploaded, saved in inventory media or sent to a public recognition provider. Closing, starting over or changing accounts clears the temporary scan. Recognition must be repeated after reloading the page. No new paid service or API key is needed.
+
+Conservative extraction fills medicine name/printed strength, verbatim directions, explicitly labelled quantity, Rx number (including leading zeros), refills, pharmacy contact/address, printed prescriber and dates. Bottle discard dates stay separate from prescription expiration. Low-confidence recognition leaves fields for manual correction; missing values are not calculated. Dates with two-digit years are not guessed. Quantity printed on a bottle is the dispensed amount: correct it to the amount actually remaining before saving. An OCR score cannot establish clinical accuracy: the user must compare every field against the actual label and affirm that it is their prescription, then review the ordinary form and click Save. This creates an owner-only record; it does not create an inventory item shared with a household.
+
+Pharmacy-specific barcodes can identify a prescription rather than a drug. They are displayed locally and can be used as an Rx number only after explicit selection. Unknown barcode URLs are never opened. **Look up this NDC** sends only the reviewed NDC code to the authenticated server, which queries the fixed public FDA NDC endpoint. Ten-digit legacy formats and common zero-padded billing equivalents are considered; ambiguous padding can produce more than one candidate. Only exact package-code matches are offered. The user chooses a product and verifies its printed name/strength; the lookup does not supply prescription directions or authorize refills. NDC directory inclusion is not proof of FDA approval. See https://open.fda.gov/apis/drug/ndc/.
+
+Saved prescriptions show **Call pharmacy for refill** when there is a valid phone number. The link opens the device's telephone interface; it does not dial automatically or submit a refill, payment or pharmacy-account request. The Rx number and refill details remain available beside it. Pharmacy staff confirm eligibility and any further instructions.
+
+Operators must expose `/prescription-label.js` and `/prescription-scan.js` in addition to `/medicine.js`. Additional prescription JSON fields are additive (`ndc`, `label_prescriber`, `bottle_expires`); no existing rows are rewritten by migration. Raw OCR text/photos are not accepted by a new backend upload route, and medical lookup terms remain excluded from audit values.

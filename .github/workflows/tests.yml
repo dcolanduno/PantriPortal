@@ -17,4 +17,4 @@ jobs:
           node-version: '22'
       - run: python -m pip install -r app/requirements.txt
       - run: python -m unittest discover -s tests -p 'test*.py'
-      - run: node --test tests/bootstrap.test.cjs tests/modes.test.cjs
+      - run: node --test tests/bootstrap.test.cjs tests/modes.test.cjs tests/prescription-label.test.cjs

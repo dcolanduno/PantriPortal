@@ -48,6 +48,16 @@ class CatalogParsingTests(unittest.TestCase):
   query=urllib.parse.parse_qs(urllib.parse.urlsplit(fetch.call_args.args[0]).query)['search'][0]
   self.assertIn('\\"',query);self.assertNotIn('Oral Pill',query)
 
+ def test_ndc_formats_exact_matches_and_no_raw_barcode_identity(self):
+  self.assertEqual(catalog.ndc_candidates('00002-8215-01'),['0002-8215-01','00002-8215-1'])
+  self.assertIn('0002-8215-01',catalog.ndc_candidates('0002821501'))
+  self.assertEqual(catalog.ndc_candidates('https://evil.invalid/0002821501'),[])
+  self.assertEqual(catalog.ndc_candidates('RX123456'),[])
+  fixture={'results':[{'brand_name':'Synthetic drug','labeler_name':'Example manufacturer','active_ingredients':[{'strength':'10 mg/1'}],'packaging':[{'package_ndc':'0002-8215-01'},{'package_ndc':'9999-9999-99'}]}]}
+  with patch.object(catalog,'fetch',return_value=fixture) as fetch:rows=catalog.ndc_lookup('00002-8215-01')['results']
+  self.assertEqual(len(rows),1);self.assertEqual(rows[0]['ndc'],'0002-8215-01');self.assertEqual(rows[0]['strength'],'10 mg/1')
+  self.assertEqual(urllib.parse.parse_qs(urllib.parse.urlsplit(fetch.call_args.args[0]).query)['search'],['packaging.package_ndc:"0002-8215-01" OR packaging.package_ndc:"00002-8215-1"'])
+
 class CatalogApiTests(unittest.TestCase):
  setUpClass=classmethod(medicine_tests.MedicineTests.setUpClass.__func__)
  tearDownClass=classmethod(medicine_tests.MedicineTests.tearDownClass.__func__)
@@ -67,6 +77,21 @@ class CatalogApiTests(unittest.TestCase):
    logs=[dict(r) for r in c.execute("SELECT * FROM audit_events WHERE route='/api/medicine'")]
    cache=[dict(r) for r in c.execute('SELECT * FROM cache')]
   self.assertNotIn(marker,json.dumps(logs)+json.dumps(cache));self.assertNotIn(notes,json.dumps(logs)+json.dumps(cache))
+ def test_ndc_lookup_and_scan_fields_remain_private_and_reviewed(self):
+  with patch.object(catalog,'ndc_lookup',return_value={'results':[]}) as lookup:
+   self.api('search/ndc','POST',{'code':'0002-8215-01','raw_text':'PRIVATE_LABEL','patient':'PRIVATE_PERSON'})
+   lookup.assert_called_once_with('0002-8215-01')
+   self.api('search/ndc','POST',{'code':'RX123456'},400)
+   self.call(client(),'/api/medicine/search/ndc','POST',{'code':'0002-8215-01'},status=401)
+   self.call(self.a,'/api/medicine/search/ndc','POST',{'code':'0002-8215-01'},'wrong',403)
+  rid=self.create(ndc='0002-8215-01',label_prescriber='PRIVATE_PRESCRIBER',bottle_expires='2027-10-20',rx_number='001234',refills_remaining=0,pharmacy_phone='212-555-0100')['id']
+  row=self.saved(rid);self.assertEqual(row['rx_number'],'001234');self.assertEqual(row['bottle_expires'],'2027-10-20');self.assertEqual(row['expires'],'');self.assertEqual(row['refills_remaining'],0)
+  self.assertEqual(self.call(self.b,'/api/medicine/state')['records'],[])
+  self.call(self.b,'/api/medicine/records/'+rid,'PUT',row,self.ub['csrf'],404)
+  for fields in [{'ndc':'https://evil.invalid'},{'bottle_expires':'2026-02-30'}]:self.api('records','POST',dict(kind='prescription',name='Test',**fields),400)
+  with server.db() as c:logs=json.dumps([dict(r) for r in c.execute("SELECT * FROM audit_events WHERE route='/api/medicine'")])
+  for marker in ['PRIVATE_LABEL','PRIVATE_PERSON','PRIVATE_PRESCRIBER','001234','0002-8215-01']:self.assertNotIn(marker,logs)
+
  def test_reference_failure_does_not_break_saving(self):
   with patch.object(catalog,'drugs',side_effect=catalog.CatalogUnavailable):self.api('search/drugs','POST',{'term':'test'},502)
   rid=self.create(catalog_name='TEST (Oral Pill)',rxcui='123')['id']

@@ -22,6 +22,8 @@ server {
     location = /home-sections.js { try_files $uri =404; }
     location = /index.html { try_files $uri =404; }
     location = /kitchen.css { try_files $uri =404; }
+    location = /prescription-label.js { try_files $uri =404; }
+    location = /prescription-scan.js { try_files $uri =404; }
     location = /medicine.js { try_files $uri =404; }
     location = /navigation.js { try_files $uri =404; }
     location = /kitchen.js { try_files $uri =404; }

@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo,ZoneInfoNotFoundError
 _api=None
 FIELDS={
  'doctor':{'name':160,'specialty':160,'practice':200,'phone':80,'email':200,'address':500,'notes':1500},
- 'prescription':{'catalog_name':160,'rxcui':20,'name':160,'strength':120,'directions':1500,'unit':60,'pharmacy':200,'pharmacy_phone':80,'pharmacy_address':500,'rx_number':120,'notes':1500},
+ 'prescription':{'ndc':20,'label_prescriber':160,'catalog_name':160,'rxcui':20,'name':160,'strength':120,'directions':1500,'unit':60,'pharmacy':200,'pharmacy_phone':80,'pharmacy_address':500,'rx_number':120,'notes':1500},
  'appointment':{'name':160,'location':500,'phone':80,'notes':1500},
 }
 
@@ -51,8 +51,9 @@ def clean(d,u,c):
   if doctor and not c.execute("SELECT 1 FROM medicine_records WHERE id=? AND user_id=? AND kind='doctor'",(doctor,u['user_id'])).fetchone():fail('Choose a doctor from your own cabinet.')
   out['doctor_id']=doctor
  if kind=='prescription':
+  if out['ndc'] and not catalog.ndc_candidates(out['ndc']):fail('Check the NDC product code.')
   if out['rxcui'] and not re.fullmatch(r'\d{1,12}',out['rxcui']):fail('Choose a valid medication strength.')
-  for key in ['last_filled','next_refill','expires']:out[key]=date(d.get(key,''),key.replace('_',' '))
+  for key in ['last_filled','next_refill','expires','bottle_expires']:out[key]=date(d.get(key,''),key.replace('_',' '))
   for key in ['quantity','refills_remaining']:out[key]=number(d.get(key),key.replace('_',' '),key=='refills_remaining')
  if kind=='appointment':
   value=d.get('starts','');zone=text(d.get('timezone',''),'appointment time zone',100,True)
@@ -75,11 +76,15 @@ def handle(h,u,path,q):
   if not row:fail('Doctor not found.',404)
   address=json.loads(row['body']).get('address','').strip()
   h.send(200,maps.office_map(address) if address else {'available':False,'reason':'missing_address'});return True
- if tail in ('search/doctors','search/drugs','drug-labels','drug-label') and method=='POST':
+ if tail in ('search/doctors','search/drugs','search/ndc','drug-labels','drug-label') and method=='POST':
   _api.limit('medicine-catalog:'+u['user_id'],60,60)
   d=h.body()
   try:
-   if tail.startswith('search/'):
+   if tail=='search/ndc':
+    code=text(d.get('code',''),'NDC product code',20,True)
+    if not catalog.ndc_candidates(code):fail('Enter the NDC printed on the label, not a pharmacy prescription barcode.')
+    result=catalog.ndc_lookup(code)
+   elif tail.startswith('search/'):
     term=text(d.get('term',''),'search text',160,True)
     if len(term)<3:fail('Type at least three characters.')
     result=catalog.doctors(term,text(d.get('near',''),'city or ZIP',100)) if tail.endswith('doctors') else catalog.drugs(term)

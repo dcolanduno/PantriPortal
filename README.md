@@ -2,7 +2,7 @@
 
 Kitchen and home inventory, recipes, meal planning and grocery shopping, with household accounts and permission-controlled administration.
 
-The current application version is **0.12.1**. The production site is [www.pantriportal.com](https://www.pantriportal.com/). This repository contains the maintained source, assets, tests, setup tools and documentation. Pushing to GitHub does not automatically deploy the website.
+The current application version is **0.13.0**. The production site is [www.pantriportal.com](https://www.pantriportal.com/). This repository contains the maintained source, assets, tests, setup tools and documentation. Pushing to GitHub does not automatically deploy the website.
 
 This GitHub repository is the source of truth for development and production. Changes are tested, committed and pushed before deploying the matching Git commit. Release artifacts record that commit and file hashes; see [deployment workflow](deployment/README.md) and [working agreement](AGENTS.md).
 
@@ -58,7 +58,7 @@ Run from the repository root using the configured Python environment and Node.js
 ```sh
 python -m pip install -r app/requirements.txt
 python -m unittest discover -s tests -p 'test*.py'
-node --test tests/bootstrap.test.cjs tests/modes.test.cjs
+node --test tests/bootstrap.test.cjs tests/modes.test.cjs tests/prescription-label.test.cjs
 ```
 
 Tests use isolated temporary databases and mock image generation. They do not require model weights or production credentials. The current application passed 53 Python tests and six JavaScript tests. Physical phone cameras and real-store conditions remain separate validation tasks. GitHub Actions runs the tests without deploying the site.

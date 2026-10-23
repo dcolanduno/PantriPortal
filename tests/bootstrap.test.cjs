@@ -15,7 +15,7 @@ test('an unfinished inventory transfer prevents application initialization',asyn
  const result=await load(false);assert.deepEqual(result.requests,[]);assert.deepEqual(result.messages,[]);
 });
 test('canonical and local pages load dependencies in order',async()=>{
- for(const flag of [true,undefined])assert.deepEqual((await load(flag)).requests,['/mode-data.js','/app.js','/features.js','/modes.js','/admin.js','/home-sections.js','/kitchen.js','/medicine.js','/navigation.js']);
+ for(const flag of [true,undefined])assert.deepEqual((await load(flag)).requests,['/mode-data.js','/app.js','/features.js','/modes.js','/admin.js','/home-sections.js','/kitchen.js','/prescription-label.js','/medicine.js','/prescription-scan.js','/navigation.js']);
 });
 test('a failed application asset stops initialization with a recovery message',async()=>{
  const result=await load(true,'/features.js');assert.deepEqual(result.requests,['/mode-data.js','/app.js','/features.js']);

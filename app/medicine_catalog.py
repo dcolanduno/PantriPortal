@@ -52,6 +52,35 @@ def drugs(term):
   out.append({'name':name,'source':'NIH RxTerms / RxNorm','forms':[{'strength':s.strip(),'rxcui':str(codes[j]) if j<len(codes) else ''} for j,s in enumerate(forms or [])]})
  return {'results':out,'warnings':[]}
 
+def ndc_candidates(code):
+ """Only explicit NDC inputs; never infer a product from an arbitrary Rx barcode."""
+ if not isinstance(code,str):return []
+ code=code.strip();out=[]
+ if re.fullmatch(r'(?:\d{4}-\d{4}-\d{2}|\d{5}-\d{3}-\d{2}|\d{5}-\d{4}-\d|\d{6}-\d{4}-\d{2})',code):return [code]
+ digits=code.replace('-','')
+ if re.fullmatch(r'\d{5}-\d{4}-\d{2}',code) or re.fullmatch(r'\d{11}',code):
+  a,b,c=digits[:5],digits[5:9],digits[9:]
+  if a.startswith('0'):out.append(a[1:]+'-'+b+'-'+c)
+  if b.startswith('0'):out.append(a+'-'+b[1:]+'-'+c)
+  if c.startswith('0'):out.append(a+'-'+b+'-'+c[1:])
+ elif re.fullmatch(r'\d{10}',code):out=[code[:4]+'-'+code[4:8]+'-'+code[8:],code[:5]+'-'+code[5:8]+'-'+code[8:],code[:5]+'-'+code[5:9]+'-'+code[9:]]
+ elif re.fullmatch(r'\d{12}',code):out=[code[:6]+'-'+code[6:10]+'-'+code[10:]]
+ return list(dict.fromkeys(out))
+
+def ndc_lookup(code):
+ candidates=ndc_candidates(code)
+ if not candidates:return {'results':[]}
+ search=' OR '.join('packaging.package_ndc:'+literal(n) for n in candidates)
+ data=fetch('https://api.fda.gov/drug/ndc.json?'+urllib.parse.urlencode({'search':search,'limit':10}))
+ out=[];seen=set()
+ for row in data.get('results',[]):
+  for package in row.get('packaging',[]):
+   ndc=package.get('package_ndc','')
+   if ndc not in candidates or ndc in seen:continue
+   seen.add(ndc)
+   out.append({'ndc':ndc,'name':row.get('brand_name') or row.get('generic_name',''),'strength':'; '.join(i.get('strength','') for i in row.get('active_ingredients',[]) if i.get('strength')),'manufacturer':row.get('labeler_name','')})
+ return {'results':out}
+
 def fda_query(search,limit=12):
  d=fetch('https://api.fda.gov/drug/label.json?'+urllib.parse.urlencode({'search':search,'limit':limit,'sort':'effective_time:desc'}))
  return d.get('results',[])

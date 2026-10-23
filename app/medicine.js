@@ -7,7 +7,7 @@ const officeCache=new Map();
 const labels={prescription:'Prescriptions',doctor:'Doctors',appointment:'Appointments',pharmacy:'Household pharmacy'};
 const fields={
  doctor:[['name','Doctor name','text',true],['specialty','Specialty'],['practice','Practice / clinic'],['phone','Phone','tel'],['email','Email','email'],['address','Address','textarea'],['notes','Notes','textarea']],
- prescription:[['name','Medicine name','text',true],['strength','Strength (as printed on the label)'],['directions','Directions from your prescription label','textarea'],['quantity','Quantity on hand','number'],['unit','Quantity unit (tablets, mL, etc.)'],['refills_remaining','Refills remaining','integer'],['last_filled','Last filled','date'],['next_refill','Next refill date','date'],['expires','Prescription expiration','date'],['pharmacy','Pharmacy name'],['pharmacy_phone','Pharmacy phone','tel'],['pharmacy_address','Pharmacy address','textarea'],['rx_number','Prescription number'],['notes','Personal notes','textarea']],
+ prescription:[['name','Medicine name','text',true],['strength','Strength (as printed on the label)'],['directions','Directions from your prescription label','textarea'],['quantity','Quantity on hand','number'],['unit','Quantity unit (tablets, mL, etc.)'],['refills_remaining','Refills remaining','integer'],['last_filled','Last filled','date'],['next_refill','Next refill date','date'],['expires','Prescription expiration','date'],['bottle_expires','Bottle / medication discard date','date'],['ndc','NDC product code'],['label_prescriber','Prescriber printed on label'],['pharmacy','Pharmacy name'],['pharmacy_phone','Pharmacy phone','tel'],['pharmacy_address','Pharmacy address','textarea'],['rx_number','Prescription number'],['notes','Personal notes','textarea']],
  appointment:[['name','Visit / appointment title','text',true],['starts','Date and time','datetime-local',true],['timezone','Time zone (for example America/New_York)','text',true],['location','Clinic / address / video visit details','textarea',true],['phone','Appointment contact phone','tel'],['notes','Notes / things to bring','textarea']]
 };
 const style=document.createElement('style');style.textContent=`
@@ -52,6 +52,11 @@ function loadOfficeMaps(){
  if('IntersectionObserver' in window){officeObserver=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting)loadMap(entry.target)},{rootMargin:'0px'});for(const node of $$('#medicine .medicine-office-map'))officeObserver.observe(node)}
  else for(const node of $$('#medicine .medicine-office-map'))loadMap(node);
 }
+function refillContact(r){
+ if(r.kind!=='prescription')return '';
+ const phone=window.PantryPrescriptionLabel.telephone(r.pharmacy_phone);
+ return `<section><h4>Request a refill</h4>${phone?`<a class="secondary" href="${esc(phone)}">Call pharmacy for refill</a>`:'<p class="medicine-note">Add the pharmacy phone from your bottle to call for refills.</p>'}<p class="medicine-note">Have your prescription number ready. Refills are confirmed by your pharmacy; no request is submitted automatically.</p></section>`;
+}
 function draw(){
  if(!state)return;
  const next=state.records.filter(r=>r.kind==='appointment'&&!r.archived&&new Date(r.starts_utc)>=new Date()).sort((a,b)=>a.starts_utc.localeCompare(b.starts_utc))[0];
@@ -68,7 +73,7 @@ function draw(){
   const names=Object.fromEntries(fields[r.kind].map(f=>[f[0],f[1]]));let details='';
   if(r.doctor_id){const d=doctor(r.doctor_id);details+=detail('Doctor',d?d.name+(d.archived?' (archived)':''):'Doctor unavailable');if(d){details+=detail('Doctor phone',d.phone);details+=detail('Doctor address',d.address)}}
   for(const [key,label] of Object.entries(names))if(key!=='name')details+=detail(label,r[key]);
-  return `<article class="medicine-card"><h3>${esc(r.name)}</h3>${r.archived?'<p class="medicine-archived">Archived</p>':''}<dl>${details}</dl>${officeMapCard(r)}${r.kind==='prescription'?`<div class="medicine-drug-reference"><h4>Drug information</h4><p class="medicine-note">Uses, side effects, warnings, interactions and full product labeling.</p><button type="button" class="secondary" data-medicine-info="${r.id}">Read drug information</button></div>`:''}<div class="medicine-tools"><button type="button" class="secondary" data-medicine-edit="${r.id}">Edit ${r.kind}</button><button type="button" class="secondary" data-medicine-archive="${r.id}">${r.archived?'Restore':'Archive'}</button></div></article>`;
+  return `<article class="medicine-card"><h3>${esc(r.name)}</h3>${r.archived?'<p class="medicine-archived">Archived</p>':''}<dl>${details}</dl>${officeMapCard(r)}${refillContact(r)}${r.kind==='prescription'?`<div class="medicine-drug-reference"><h4>Drug information</h4><p class="medicine-note">Uses, side effects, warnings, interactions and full product labeling.</p><button type="button" class="secondary" data-medicine-info="${r.id}">Read drug information</button></div>`:''}<div class="medicine-tools"><button type="button" class="secondary" data-medicine-edit="${r.id}">Edit ${r.kind}</button><button type="button" class="secondary" data-medicine-archive="${r.id}">${r.archived?'Restore':'Archive'}</button></div></article>`;
  }).join('')||`<p>No ${esc(labels[tab].toLowerCase())} ${term?'match your search':'yet'}.</p>`;
  if(tab==='pharmacy'){$('#medicine-list').insertAdjacentHTML('beforeend','<div class="medicine-wide"><button type="button" class="secondary" id="medicine-manage-stock">Manage shared stock in Home inventory</button></div>');message('OTC medicines and supplies in the Medicines and first aid Home section appear here. Stock is counted once. Keep personal prescriptions in your private cabinet.')}else message('');
  loadOfficeMaps();
@@ -84,10 +89,16 @@ function editor(kind,r=null){
  const list=kind==='cabinet'?[['name','Cabinet name','text',true]]:fields[kind];const data=r||{};
  $('#medicine-fields').innerHTML=(['prescription','appointment'].includes(kind)?`<label class="medicine-wide">${kind==='prescription'?'Prescribing doctor':'Doctor'}<select name="doctor_id"><option value="">Not selected</option>${state.records.filter(d=>d.kind==='doctor'&&(!d.archived||d.id===data.doctor_id)).map(d=>`<option value="${d.id}" ${d.id===data.doctor_id?'selected':''}>${esc(d.name)}${d.archived?' (archived)':''}</option>`).join('')}</select><small>Add a doctor in the Doctors section to link their contact details.</small></label>`:'')+list.map(([key,label,type='text',required=false])=>{
   let value=data[key]??'';if(key==='timezone'&&!value)value=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';
-  const maximum=kind==='cabinet'?100:kind==='doctor'?({name:160,specialty:160,practice:200,phone:80,email:200,address:500,notes:1500}[key]):({name:160,strength:120,directions:1500,unit:60,pharmacy:200,pharmacy_phone:80,pharmacy_address:500,rx_number:120,notes:1500,location:500,phone:80,timezone:100}[key]||100);
+  const maximum=kind==='cabinet'?100:kind==='doctor'?({name:160,specialty:160,practice:200,phone:80,email:200,address:500,notes:1500}[key]):({name:160,strength:120,directions:1500,unit:60,pharmacy:200,pharmacy_phone:80,pharmacy_address:500,rx_number:120,ndc:20,label_prescriber:160,notes:1500,location:500,phone:80,timezone:100}[key]||100);
   return `<label class="${type==='textarea'?'medicine-wide':''}">${esc(label)}${required?' *':''}${type==='textarea'?`<textarea name="${key}" maxlength="${maximum}" ${required?'required':''}>${esc(value)}</textarea>`:`<input name="${key}" type="${type==='integer'?'number':type}" value="${esc(value)}" maxlength="${maximum}" ${['number','integer'].includes(type)?`min="0" max="1000000" step="${type==='integer'?'1':'any'}"`:''} ${required?'required':''}>`}</label>`;
  }).join('');installSearch(kind,data);$('#medicine-save').disabled=false;$('#medicine-editor').showModal();
 }
+window.PantryOpenScannedPrescription=async draft=>{
+ if(!bridge.current()){bridge.openAccount();return}
+ const e=epoch;await open();if(e!==epoch||!state||!bridge.current())return;editor('prescription');
+ for(const [key] of fields.prescription){const el=$('#medicine-form').elements.namedItem(key);if(el&&draft[key]!==undefined)el.value=String(draft[key])}
+ $('#medicine-editor-title').textContent='Review scanned prescription';
+};
 $('#medicine-form').onsubmit=async e=>{e.preventDefault();const button=$('#medicine-save');button.disabled=true;const saved=editing;
  try{const d=Object.fromEntries(new FormData(e.target));d.kind=saved.kind;d.archived=saved.archived||false;d.revision=saved.revision||'';
   await api(saved.kind==='cabinet'?'cabinet':saved.id?'records/'+saved.id:'records',saved.kind==='cabinet'||saved.id?'PUT':'POST',d);$('#medicine-editor').close();editing=null;await load();toast('Medicine cabinet saved.');
@@ -121,7 +132,7 @@ function installSearch(kind,data){
  if(kind==='prescription'){
   $('#medicine-fields').insertAdjacentHTML('beforeend','<input type="hidden" name="catalog_name"><input type="hidden" name="rxcui"><datalist id="medicine-strengths"></datalist><div class="medicine-wide"><button type="button" class="secondary" id="medicine-editor-info">Read drug information</button><p class="medicine-note">Reference information does not change your prescribed directions. Match the product, strength and route to your label.</p></div>');
   input('catalog_name').value=data.catalog_name||'';input('rxcui').value=data.rxcui||'';input('strength').setAttribute('list','medicine-strengths');
-  input('strength').addEventListener('input',()=>{input('rxcui').value=selectedForms.find(f=>f.strength===input('strength').value)?.rxcui||''});
+  input('strength').addEventListener('input',()=>{input('ndc').value='';input('rxcui').value=selectedForms.find(f=>f.strength===input('strength').value)?.rxcui||''});
   $('#medicine-editor-info').onclick=()=>showDrugInfo({name:name.value,catalog_name:input('catalog_name').value,rxcui:input('rxcui').value});
  }
  function hide(){const box=$('#medicine-suggestions');if(box){box.hidden=true;name.setAttribute('aria-expanded','false');name.removeAttribute('aria-activedescendant')}active=-1}
@@ -133,7 +144,7 @@ function installSearch(kind,data){
    $('#medicine-lookup-status').textContent='Contact details filled from '+r.source+'. Check the office and phone before saving.';
    $('#medicine-reference-links').innerHTML=`<a href="${esc(safeLink(r.source_url))}" target="_blank" rel="noopener noreferrer">View source: ${esc(r.source)}</a>`;
   }else{
-   selectedForms=r.forms||[];input('catalog_name').value=r.name;input('rxcui').value='';
+   input('ndc').value='';selectedForms=r.forms||[];input('catalog_name').value=r.name;input('rxcui').value='';
    // A catalog option is not a prescription: users choose the strength printed on their label.
    $('#medicine-strengths').innerHTML=selectedForms.map(f=>`<option value="${esc(f.strength)}"></option>`).join('');
    input('rxcui').value=selectedForms.find(f=>f.strength===input('strength').value)?.rxcui||'';
@@ -143,7 +154,7 @@ function installSearch(kind,data){
  }
  function schedule(){
   clearTimeout(lookupTimer);const serial=++lookupSerial,e=epoch,term=name.value.trim();hide();options=[];$('#medicine-reference-links').replaceChildren();
-  if(kind==='prescription'){input('catalog_name').value='';input('rxcui').value='';selectedForms=[];$('#medicine-strengths').replaceChildren()}
+  if(kind==='prescription'){input('ndc').value='';input('catalog_name').value='';input('rxcui').value='';selectedForms=[];$('#medicine-strengths').replaceChildren()}
   const status=$('#medicine-lookup-status');status.textContent=term.length<3?'Type at least three characters for suggestions.':'Searching…';
   if(term.length<3)return;
   lookupTimer=setTimeout(async()=>{

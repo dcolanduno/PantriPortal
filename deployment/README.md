@@ -37,3 +37,8 @@ Install `requirements-dev.txt` to regenerate the handbook with `python tools/bui
 ## Medicine reference search (0.12.0)
 
 Deploy `medicine_catalog.py` alongside `medicine_ops.py` and `medicine.js` from the same tested release. Reference services require outbound HTTPS to `clinicaltables.nlm.nih.gov` and `api.fda.gov`. Optional Google Places requires `places.googleapis.com` and a private `PANTRY_GOOGLE_PLACES_KEY` service environment setting; never commit it or include it in release metadata. Without that setting the NIH doctor directory remains available. Existing `/api/` proxying and `/medicine.js` static exposure cover these changes. No additional schema tables or packages are introduced; the two optional prescription identity fields are additive JSON properties. Restart the Python application after release activation and check health version 0.12.0 plus the affected signed-in forms.
+
+
+## Prescription label scanner (0.13.0)
+
+Expose `/prescription-label.js` and `/prescription-scan.js` through both canonical and compatibility proxy configurations. Use the same commit's bootstrap, medicine frontend and Python modules. The browser uses the existing local ZXing/Tesseract libraries and their recognition-runtime downloads. NDC reference requests use `api.fda.gov/drug/ndc.json`; no photos or raw label text are posted to an OCR backend. The additional saved JSON properties do not rewrite existing records. Check signed-in scanner loading, public product lookup, private save/review, telephone links, and account-change cleanup. Camera hardware requires a real phone test; desktop photo OCR is a separate verification.

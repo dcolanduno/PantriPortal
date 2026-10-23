@@ -2,7 +2,7 @@
 (async function(){
  'use strict';
  if(window.PP_RUN_APP===false)return;
- for(const name of ['mode-data.js','app.js','features.js','modes.js','admin.js','home-sections.js','kitchen.js','medicine.js','navigation.js']){
+ for(const name of ['mode-data.js','app.js','features.js','modes.js','admin.js','home-sections.js','kitchen.js','prescription-label.js','medicine.js','prescription-scan.js','navigation.js']){
   await new Promise((resolve,reject)=>{
    const script=document.createElement('script');
    script.src='/'+name;script.onload=resolve;script.onerror=reject;
