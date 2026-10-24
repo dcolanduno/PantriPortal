@@ -1,6 +1,7 @@
 """Permission-scoped administration and private, tamper-evident operational records."""
 import csv,hashlib,hmac,io,json,os,re,secrets,shutil,sqlite3,tarfile,threading,time,types
 from pathlib import Path
+from contextlib import closing
 
 ROOT=Path(__file__).resolve().parent
 PERMISSIONS={
@@ -302,7 +303,7 @@ def handle(h,path,q,user,method_override=None):
  if tail=='overview' and method=='GET':
   grants=permissions(user)
   if not grants:raise _api.Problem(403,'Administrator access is required.')
-  result={'permissions':sorted(grants),'permission_labels':PERMISSIONS,'full_admin':full_admin(user),'version':'0.13.0','content_types':['inventory','recipes','product images','recipe images'],'logging':{'started':True,'retroactive':False,'suppressed_anonymous_events':_suppressed,'policy':'Server actions and signed-in browser error types; no passwords, tokens, bodies or query strings. Repeated anonymous errors are sampled to resist log floods. Logs are append-only and require private host maintenance to archive.'}}
+  result={'permissions':sorted(grants),'permission_labels':PERMISSIONS,'full_admin':full_admin(user),'version':'0.14.0','content_types':['inventory','recipes','product images','recipe images'],'logging':{'started':True,'retroactive':False,'suppressed_anonymous_events':_suppressed,'policy':'Server actions and signed-in browser error types; no passwords, tokens, bodies or query strings. Repeated anonymous errors are sampled to resist log floods. Logs are append-only and require private host maintenance to archive.'}}
   if 'audit.read' in grants:
    with _api.db() as c:
     result['events']=c.execute('SELECT count(*) FROM audit_events').fetchone()[0];result['errors_24h']=c.execute("SELECT count(*) FROM audit_events WHERE error_code<>'' AND created>?",(time.time()-86400,)).fetchone()[0]
@@ -325,9 +326,9 @@ def handle(h,path,q,user,method_override=None):
   _api.limit('backup',2,3600);folder=_api.DATA/'backups';folder.mkdir(mode=0o700,exist_ok=True)
   stamp=time.strftime('%Y%m%dT%H%M%SZ',time.gmtime())+'-'+secrets.token_hex(3)
   snapshot=folder/(stamp+'.sqlite3');archive=folder/(stamp+'.tar.gz')
-  with _api.db() as source,sqlite3.connect(snapshot) as target:source.backup(target)
+  with _api.db() as source,closing(sqlite3.connect(snapshot)) as target:source.backup(target)
   snapshot.chmod(0o600)
-  with sqlite3.connect(snapshot) as target:
+  with closing(sqlite3.connect(snapshot)) as target:
    if target.execute('PRAGMA quick_check').fetchone()[0]!='ok':raise _api.Problem(500,'The recovery snapshot did not pass its integrity check.')
    tail=target.execute('SELECT id,digest FROM audit_events ORDER BY id DESC LIMIT 1').fetchone()
   snapshot_head=folder/(stamp+'.audit-head')

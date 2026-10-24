@@ -73,7 +73,7 @@ function draw(){
   const names=Object.fromEntries(fields[r.kind].map(f=>[f[0],f[1]]));let details='';
   if(r.doctor_id){const d=doctor(r.doctor_id);details+=detail('Doctor',d?d.name+(d.archived?' (archived)':''):'Doctor unavailable');if(d){details+=detail('Doctor phone',d.phone);details+=detail('Doctor address',d.address)}}
   for(const [key,label] of Object.entries(names))if(key!=='name')details+=detail(label,r[key]);
-  return `<article class="medicine-card"><h3>${esc(r.name)}</h3>${r.archived?'<p class="medicine-archived">Archived</p>':''}<dl>${details}</dl>${officeMapCard(r)}${refillContact(r)}${r.kind==='prescription'?`<div class="medicine-drug-reference"><h4>Drug information</h4><p class="medicine-note">Uses, side effects, warnings, interactions and full product labeling.</p><button type="button" class="secondary" data-medicine-info="${r.id}">Read drug information</button></div>`:''}<div class="medicine-tools"><button type="button" class="secondary" data-medicine-edit="${r.id}">Edit ${r.kind}</button><button type="button" class="secondary" data-medicine-archive="${r.id}">${r.archived?'Restore':'Archive'}</button></div></article>`;
+  return `<article class="medicine-card"><h3>${esc(r.name)}</h3>${r.archived?'<p class="medicine-archived">Archived</p>':''}<dl>${details}</dl>${officeMapCard(r)}${refillContact(r)}${r.kind==='prescription'?`<button type="button" class="secondary" data-medicine-prices="${r.id}">Nearby pharmacies &amp; prices</button>`:''}${r.kind==='prescription'?`<div class="medicine-drug-reference"><h4>Drug information</h4><p class="medicine-note">Uses, side effects, warnings, interactions and full product labeling.</p><button type="button" class="secondary" data-medicine-info="${r.id}">Read drug information</button></div>`:''}<div class="medicine-tools"><button type="button" class="secondary" data-medicine-edit="${r.id}">Edit ${r.kind}</button><button type="button" class="secondary" data-medicine-archive="${r.id}">${r.archived?'Restore':'Archive'}</button></div></article>`;
  }).join('')||`<p>No ${esc(labels[tab].toLowerCase())} ${term?'match your search':'yet'}.</p>`;
  if(tab==='pharmacy'){$('#medicine-list').insertAdjacentHTML('beforeend','<div class="medicine-wide"><button type="button" class="secondary" id="medicine-manage-stock">Manage shared stock in Home inventory</button></div>');message('OTC medicines and supplies in the Medicines and first aid Home section appear here. Stock is counted once. Keep personal prescriptions in your private cabinet.')}else message('');
  loadOfficeMaps();
@@ -91,12 +91,23 @@ function editor(kind,r=null){
   let value=data[key]??'';if(key==='timezone'&&!value)value=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';
   const maximum=kind==='cabinet'?100:kind==='doctor'?({name:160,specialty:160,practice:200,phone:80,email:200,address:500,notes:1500}[key]):({name:160,strength:120,directions:1500,unit:60,pharmacy:200,pharmacy_phone:80,pharmacy_address:500,rx_number:120,ndc:20,label_prescriber:160,notes:1500,location:500,phone:80,timezone:100}[key]||100);
   return `<label class="${type==='textarea'?'medicine-wide':''}">${esc(label)}${required?' *':''}${type==='textarea'?`<textarea name="${key}" maxlength="${maximum}" ${required?'required':''}>${esc(value)}</textarea>`:`<input name="${key}" type="${type==='integer'?'number':type}" value="${esc(value)}" maxlength="${maximum}" ${['number','integer'].includes(type)?`min="0" max="1000000" step="${type==='integer'?'1':'any'}"`:''} ${required?'required':''}>`}</label>`;
- }).join('');installSearch(kind,data);$('#medicine-save').disabled=false;$('#medicine-editor').showModal();
+ }).join('');if(kind==='prescription'){$('#medicine-fields').insertAdjacentHTML('afterbegin','<div class="medicine-wide"><button type="button" class="secondary" id="medicine-form-scan">📷 Scan / photograph prescription bottle</button><p class="medicine-note">Use your phone camera or a photo to read the label, then review the extracted details here before saving to your private cabinet.</p></div>');$('#medicine-form-scan').onclick=()=>window.PantryLaunchPrescriptionScan(draft=>{if(!bridge.current()||!$('#medicine-editor').open)return;applyLabelDraft(draft);$('#medicine-form-error').textContent='Label details filled. Check every field against the bottle before saving; retained fields may not have been read.'})}installSearch(kind,data);$('#medicine-save').disabled=false;$('#medicine-editor').showModal();
+}
+function applyLabelDraft(draft){
+ const form=$('#medicine-form'),name=form.elements.name.value.trim().toLocaleLowerCase();
+ if(draft.name&&name&&draft.name.trim().toLocaleLowerCase()!==name){
+  for(const [key] of fields.prescription)if(key!=='notes')form.elements.namedItem(key).value='';
+  form.elements.doctor_id.value='';
+ }else if((draft.strength&&draft.strength!==form.elements.strength.value)||(draft.label_prescriber&&draft.label_prescriber!==form.elements.label_prescriber.value)){
+  form.elements.ndc.value='';if(draft.label_prescriber)form.elements.doctor_id.value='';
+ }
+ for(const [key] of fields.prescription){const el=form.elements.namedItem(key);if(el&&draft[key]!==undefined&&draft[key]!=='')el.value=String(draft[key])}
+ input('catalog_name').value='';input('rxcui').value='';stopLookup();$('#medicine-suggestions').hidden=true;input('name').setAttribute('aria-expanded','false');
 }
 window.PantryOpenScannedPrescription=async draft=>{
  if(!bridge.current()){bridge.openAccount();return}
  const e=epoch;await open();if(e!==epoch||!state||!bridge.current())return;editor('prescription');
- for(const [key] of fields.prescription){const el=$('#medicine-form').elements.namedItem(key);if(el&&draft[key]!==undefined)el.value=String(draft[key])}
+ applyLabelDraft(draft);
  $('#medicine-editor-title').textContent='Review scanned prescription';
 };
 $('#medicine-form').onsubmit=async e=>{e.preventDefault();const button=$('#medicine-save');button.disabled=true;const saved=editing;
@@ -113,6 +124,7 @@ $('#medicine').addEventListener('click',async e=>{const b=e.target.closest('butt
  if(b.dataset.medicineTab){tab=b.dataset.medicineTab;$('#medicine-search').value='';draw();return}
  if(b.id==='medicine-manage-stock'){sharedStock();return}
  if(b.id==='medicine-rename'){editor('cabinet',{kind:'cabinet',name:state.cabinet.name,revision:state.cabinet_revision});return}
+ if(b.dataset.medicinePrices){const r=state.records.find(r=>r.id===b.dataset.medicinePrices);if(r)window.PantryMedicinePrices(r);return}
  if(b.dataset.medicineInfo){const record=state.records.find(r=>r.id===b.dataset.medicineInfo);if(record)showDrugInfo(record);return}
  const id=b.dataset.medicineEdit||b.dataset.medicineArchive;if(!id)return;const r=state.records.find(r=>r.id===id);if(!r)return;
  if(b.dataset.medicineEdit){editor(r.kind,r);return}
@@ -185,10 +197,11 @@ function installSearch(kind,data){
   }else if(e.key==='Enter'&&active>=0){e.preventDefault();choose(active)}else if(e.key==='Tab')hide();
  });
 }
-document.body.insertAdjacentHTML('beforeend',`<dialog id="medicine-info" class="medicine-dialog" aria-labelledby="medicine-info-title"><h2 id="medicine-info-title">Drug information</h2><p class="medicine-note">Product-label reference only. It may not cover every use or side effect, including off-label uses. Follow your prescription and ask your pharmacist or clinician about your care. No personalized dosing or interaction assessment is provided.</p><div id="medicine-info-body"></div><button type="button" class="secondary" id="medicine-info-close">Close drug information</button></dialog>`);
+document.body.insertAdjacentHTML('beforeend',`<dialog id="medicine-info" class="medicine-dialog" aria-labelledby="medicine-info-title"><h2 id="medicine-info-title">Drug information</h2><p class="medicine-note">Product-label reference only. It may not cover every use or side effect, including off-label uses. Follow your prescription and ask your pharmacist or clinician about your care. No personalized dosing or interaction assessment is provided.</p><div id="medicine-info-body"></div><button type="button" class="secondary" id="medicine-info-prices">Nearby pharmacies &amp; compare prices</button><button type="button" class="secondary" id="medicine-info-close">Close drug information</button></dialog>`);
 $('#medicine-info-close').onclick=()=>$('#medicine-info').close();
 $('#medicine-info').addEventListener('close',()=>{infoSerial++;$('#medicine-info-body').replaceChildren()});
 async function showDrugInfo(record){
+ $('#medicine-info-prices').onclick=()=>window.PantryMedicinePrices(record);
  const e=epoch,serial=++infoSerial,body=$('#medicine-info-body');$('#medicine-info-title').textContent='About '+record.name;body.textContent='Finding product labels…';$('#medicine-info').showModal();
  try{
   const result=await api('drug-labels','POST',{name:record.catalog_name||record.name,rxcui:record.rxcui||''});

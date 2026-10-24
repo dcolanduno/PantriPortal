@@ -2,6 +2,7 @@
 import datetime,hashlib,json,math,re,secrets,time,types
 import medicine_catalog as catalog
 import medicine_maps as maps
+import medicine_benefits as benefits
 from zoneinfo import ZoneInfo,ZoneInfoNotFoundError
 
 _api=None
@@ -14,6 +15,7 @@ FIELDS={
 def initialize(namespace):
  global _api
  _api=types.SimpleNamespace(**namespace)
+ benefits.initialize(namespace)
  with _api.db() as c:c.executescript('''
 CREATE TABLE IF NOT EXISTS medicine_cabinets(user_id TEXT PRIMARY KEY REFERENCES users(id),body TEXT NOT NULL,updated REAL NOT NULL);
 CREATE TABLE IF NOT EXISTS medicine_records(id TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id),kind TEXT NOT NULL,body TEXT NOT NULL,updated REAL NOT NULL);
@@ -69,6 +71,14 @@ def clean(d,u,c):
 def handle(h,u,path,q):
  if not path.startswith('/api/medicine/'):return False
  method=h.command;tail=path.removeprefix('/api/medicine/')
+ if benefits.handle(h,u,tail):return True
+ if tail=='search/pharmacies' and method=='POST':
+  _api.limit('medicine-pharmacies:'+u['user_id'],30,60)
+  zip=text(h.body().get('zip',''),'ZIP code',5,True)
+  if not re.fullmatch(r'\d{5}',zip):fail('Enter a five-digit US ZIP code.')
+  try:result=catalog.pharmacies(zip)
+  except catalog.CatalogUnavailable:fail('Pharmacy directory unavailable. Use the map link or add a pharmacy manually.',502)
+  h.send(200,result);return True
  if tail=='office-map' and method=='POST':
   _api.limit('medicine-maps:'+u['user_id'],30,60)
   rid=text(h.body().get('id',''),'doctor selection',24,True)

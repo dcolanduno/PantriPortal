@@ -42,3 +42,8 @@ Deploy `medicine_catalog.py` alongside `medicine_ops.py` and `medicine.js` from 
 ## Prescription label scanner (0.13.0)
 
 Expose `/prescription-label.js` and `/prescription-scan.js` through both canonical and compatibility proxy configurations. Use the same commit's bootstrap, medicine frontend and Python modules. The browser uses the existing local ZXing/Tesseract libraries and their recognition-runtime downloads. NDC reference requests use `api.fda.gov/drug/ndc.json`; no photos or raw label text are posted to an OCR backend. The additional saved JSON properties do not rewrite existing records. Check signed-in scanner loading, public product lookup, private save/review, telephone links, and account-change cleanup. Camera hardware requires a real phone test; desktop photo OCR is a separate verification.
+
+
+## Benefits and comparison screens (0.14.0)
+
+Expose `/medicine-benefits.js` in canonical and compatibility Nginx routes. Deploy medicine_benefits.py and medicine_pricing.py with the same commit's frontend, bootstrap and medicine operations. Additive profile/quote tables must remain private in runtime backups. GoodRx partner access is optional and disabled without explicit private configuration; see docs/PHARMACY_PRICING.md. Source tests use synthetic provider responses; no live authenticated pricing claim is permitted until credentials and a real matched request are verified.

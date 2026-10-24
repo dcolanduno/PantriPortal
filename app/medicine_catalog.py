@@ -111,3 +111,13 @@ def label_detail(label_id):
  for key,value in row.items():
   if key not in known and isinstance(value,list) and all(isinstance(v,str) for v in value):sections.append({'key':key,'title':key.replace('_',' ').capitalize(),'text':'\n\n'.join(value)})
  return {'label':{'id':row['id'],'identity':row.get('openfda',{}),'effective_time':row.get('effective_time',''),'sections':sections,'source':'FDA product labeling via openFDA','source_url':'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid='+setid if re.fullmatch(r'[a-fA-F0-9-]{36}',setid) else 'https://dailymed.nlm.nih.gov/dailymed/'}}
+
+
+def pharmacies(zip):
+ d=ctss('npi_org',zip,maxList=100,df='name.full,addr_practice.full,addr_practice.phone,provider_type',sf='addr_practice.zip',q='licenses.taxonomy.classification:"Pharmacy"')
+ if not isinstance(d,list) or len(d)<4:raise CatalogUnavailable()
+ rows=[]
+ for n,r in zip_rows(d):
+  if re.fullmatch(r'\d{10}',str(n)) and len(r)>=4:rows.append({'key':str(n),'name':r[0],'address':r[1],'phone':r[2],'source':'CMS NPI via NIH','source_url':'https://npiregistry.cms.hhs.gov/provider-view/'+str(n)})
+ return {'results':rows,'source':'CMS NPI via NIH','note':'Up to 100 registered pharmacies matching this ZIP; not an exhaustive list or confirmation of stock, network participation, dispensing services or price.'}
+def zip_rows(d):return zip(d[1],d[3])

@@ -105,6 +105,8 @@ class AdministrationTests(unittest.TestCase):
   self.ops('integrations','PUT',{'provider':'arbitrary_host','enabled':True},400)
   backup=self.ops('backup','POST',{});path=server.DATA/'backups'/backup['name'];self.assertTrue(path.is_file());self.assertNotIn('password',json.dumps(backup))
   with tarfile.open(path) as archive:self.assertIn('audit-signing-key',archive.getnames());self.assertIn('inventory.sqlite3',archive.getnames())
+  snapshot=path.with_name(backup['name'].removesuffix('.tar.gz')+'.sqlite3');checked=snapshot.with_suffix('.checked.sqlite3')
+  snapshot.rename(checked);checked.rename(snapshot) # Closed backup handles must allow immediate Windows archive maintenance.
  def test_error_guide_is_permission_protected_and_unexpected_errors_are_trapped(self):
   with self.admin.open(self.base+'/api/admin/ops/guide.docx') as response:self.assertTrue(response.read().startswith(b'PK'))
   self.call(self.user,'/api/admin/ops/guide.docx',status=403)

@@ -1,6 +1,7 @@
 (function(){
 'use strict';
 const bridge=window.PantryAdminBridge,parser=window.PantryPrescriptionLabel;
+let applyTo=null;
 let serial=0,worker=null,preview='',barcodes=[],scripts={},reading=false;
 const fields=[['name','Medicine name'],['strength','Strength on label'],['directions','Directions exactly as printed'],['quantity','Quantity on hand'],['unit','Quantity unit'],['refills_remaining','Refills remaining'],['last_filled','Last filled'],['next_refill','Next refill date'],['expires','Prescription expiration'],['bottle_expires','Bottle / medication discard date'],['pharmacy','Pharmacy name'],['pharmacy_phone','Pharmacy / refill phone'],['pharmacy_address','Pharmacy address'],['rx_number','Prescription number'],['ndc','NDC product code'],['label_prescriber','Prescriber printed on label']];
 const button=document.createElement('button');button.type='button';button.className='secondary';button.id='prescription-scan-open';button.textContent='📷 Scan prescription label';$('#medicine .medicine-tools').append(button);
@@ -30,11 +31,12 @@ async function photo(file,append){
  }catch(err){if(task===serial)status(err.message==='Choose an image smaller than 15 MB.'?err.message:'The label could not be read on this device. Retake a clearer photo or enter/correct the label text manually.');}
  finally{if(object)URL.revokeObjectURL(object);if(canvas){canvas.width=0;canvas.height=0}if(task===serial){if(worker){await worker.terminate().catch(()=>{});worker=null}reading=false;busy(false)}}
 }
-button.onclick=()=>{if(!bridge.current()){bridge.openAccount();return}reset();$('#prescription-scan').showModal()};
+window.PantryLaunchPrescriptionScan=callback=>{if(!bridge.current()){bridge.openAccount();return}reset();applyTo=callback||null;$('#prescription-scan').showModal()};
+button.onclick=()=>window.PantryLaunchPrescriptionScan();
 $('#rx-label-camera').onchange=e=>photo(e.target.files[0],false);$('#rx-label-file').onchange=e=>photo(e.target.files[0],false);$('#rx-label-more').onchange=e=>photo(e.target.files[0],true);
-$('#rx-label-extract').onclick=extract;$('#rx-label-clear').onclick=reset;$('#rx-label-cancel').onclick=$('#rx-label-close').onclick=()=>$('#prescription-scan').close();$('#prescription-scan').addEventListener('close',reset);
+$('#rx-label-extract').onclick=extract;$('#rx-label-clear').onclick=reset;$('#rx-label-cancel').onclick=$('#rx-label-close').onclick=()=>$('#prescription-scan').close();$('#prescription-scan').addEventListener('close',()=>{reset();applyTo=null});
 $('#rx-label-text').addEventListener('input',()=>{$('#rx-label-confirm').checked=false});$('#rx-label-review').addEventListener('input',e=>{if(e.target.id!=='rx-label-confirm')$('#rx-label-confirm').checked=false;$('#rx-label-error').textContent=''});
 $('#rx-label-ndc').onclick=async()=>{const task=serial,code=$('#rx-label-review').elements.ndc.value.trim(),box=$('#rx-label-products');box.textContent='Checking only this NDC in the public drug directory…';$('#rx-label-ndc').disabled=true;try{const result=await bridge.api('medicine/search/ndc','POST',{code});if(task!==serial||code!==$('#rx-label-review').elements.ndc.value.trim())return;box.replaceChildren();for(const item of result.results||[]){const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent=[item.name,item.strength,item.manufacturer,item.ndc].filter(Boolean).join(' · ');b.onclick=()=>{for(const key of ['name','strength','ndc'])$('#rx-label-review').elements[key].value=item[key]||'';$('#rx-label-confirm').checked=false;box.textContent='Product selected. Compare the name and strength with your actual bottle.'};box.append(b)}if(!result.results?.length)box.textContent='No exact NDC match. Check the printed code or enter the medicine manually. A pharmacy Rx barcode may not be an NDC.'}catch{if(task===serial)box.textContent='NDC lookup is unavailable. Manual review and saving still work.'}finally{if(task===serial)$('#rx-label-ndc').disabled=false}};
-$('#rx-label-review').onsubmit=e=>{e.preventDefault();if(reading||!$('#rx-label-confirm').checked)return;const draft=Object.fromEntries(new FormData(e.target));$('#prescription-scan').close();window.PantryOpenScannedPrescription(draft)};
+$('#rx-label-review').onsubmit=e=>{e.preventDefault();if(reading||!$('#rx-label-confirm').checked)return;const draft=Object.fromEntries(new FormData(e.target));const target=applyTo;$('#prescription-scan').close();if(target)target(draft);else window.PantryOpenScannedPrescription(draft)};
 window.addEventListener('pantry-account-updated',()=>{$('#prescription-scan').close();reset()});
 })();
