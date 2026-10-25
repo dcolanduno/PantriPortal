@@ -21,6 +21,31 @@ def handle(h,u,tail):
  if not tail.startswith('benefits/'):return False
  action=tail.removeprefix('benefits/');method=h.command;uid=u['user_id']
  if action=='provider-status' and method=='GET':h.send(200,pricing.status());return True
+ if action=='public-prices' and method=='POST':
+  _api.limit('medicine-public-prices:'+uid,60,60);name=text(h.body(),'name',160,True)
+  try:result=pricing.public_prices(name)
+  except catalog.CatalogUnavailable:fail('Public cash prices unavailable. Saved quotes and official price links remain available.',502)
+  h.send(200,result);return True
+ if action=='dose-options' and method=='POST':
+  _api.limit('medicine-catalog:'+uid,60,60);name=text(h.body(),'name',160,True)
+  def key(s):return re.sub(r'\s*\((?:Oral Pill|Oral Liquid|Oral|Topical|Injectable|Inhalant|Ophthalmic|Otic|Nasal|Rectal|Vaginal|Transdermal)\)\s*$','',s,flags=re.I).strip().casefold()
+  try:found=catalog.drugs(name)
+  except catalog.CatalogUnavailable:fail('Strength list unavailable. Saved prices remain available.',502)
+  options=[];seen=set()
+  for drug in found.get('results',[]):
+   if key(drug.get('name',''))!=key(name):continue
+   for f in drug.get('forms',[]):
+    strength=f.get('strength','')
+    if strength and strength not in seen:seen.add(strength);options.append({'strength':strength,'rxcui':f.get('rxcui','')})
+  h.send(200,{'options':options[:100],'source':'NIH RxTerms'});return True
+ if action=='provider-browse' and method=='POST':
+  _api.limit('medicine-price-browse:'+uid,2,60);d=h.body()
+  if d.get('consent') is not True:fail('Confirm sharing the drug name and optional ZIP with GoodRx.')
+  name=text(d,'name',160,True);zip=text(d,'zip',5)
+  if zip and not re.fullmatch(r'\d{5}',zip):fail('Enter a five-digit ZIP or leave it blank.')
+  try:result=pricing.browse(name,zip)
+  except catalog.CatalogUnavailable:fail('GoodRx prices unavailable. Saved prices and official tools remain available.',502)
+  h.send(200,result);return True
  if action=='provider-prices' and method=='POST':
   _api.limit('medicine-prices:'+uid,12,60)
   d=h.body()

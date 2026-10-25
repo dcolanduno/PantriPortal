@@ -2,7 +2,7 @@
 
 Kitchen and home inventory, recipes, meal planning and grocery shopping, with household accounts and permission-controlled administration.
 
-The current application version is **0.14.0**. The production site is [www.pantriportal.com](https://www.pantriportal.com/). This repository contains the maintained source, assets, tests, setup tools and documentation. Pushing to GitHub does not automatically deploy the website.
+The current application version is **0.14.1**. The production site is [www.pantriportal.com](https://www.pantriportal.com/). This repository contains the maintained source, assets, tests, setup tools and documentation. Pushing to GitHub does not automatically deploy the website.
 
 This GitHub repository is the source of truth for development and production. Changes are tested, committed and pushed before deploying the matching Git commit. Release artifacts record that commit and file hashes; see [deployment workflow](deployment/README.md) and [working agreement](AGENTS.md).
 

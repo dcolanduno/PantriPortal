@@ -43,6 +43,23 @@ class BenefitsTests(unittest.TestCase):
    r=self.api('benefits/provider-prices','POST',body);self.assertFalse(r['configured']);fetch.assert_not_called()
   self.api('benefits/provider-prices','POST',dict(body,consent=False),400)
   self.call(self.b,'/api/medicine/benefits/provider-prices','POST',body,self.ub['csrf'],404)
+ def test_browse_needs_only_name_optional_zip_and_consent(self):
+  with patch.object(pricing,'browse',return_value={'variants':[]}) as browse:
+   self.api('benefits/provider-browse','POST',{'name':'Example','consent':True,'member_id':'PRIVATE_IGNORE','directions':'PRIVATE_IGNORE'})
+   browse.assert_called_once_with('Example','')
+  self.api('benefits/provider-browse','POST',{'name':'Example','consent':False},400)
+  self.call(client(),'/api/medicine/benefits/provider-browse','POST',{'name':'Example','consent':True},status=401)
+  with patch.object(catalog,'drugs',return_value={'results':[{'name':'Example (Oral Pill)','forms':[{'strength':'10 mg Tab','rxcui':'101'},{'strength':'20 mg Tab','rxcui':'102'}]},{'name':'Different drug','forms':[{'strength':'999 mg','rxcui':'999'}]},{'name':'Example (Extended Release)','forms':[{'strength':'888 mg','rxcui':'888'}]}]}):
+   self.assertEqual([o['strength'] for o in self.api('benefits/dose-options','POST',{'name':'Example'})['options']],['10 mg Tab','20 mg Tab'])
+
+ def test_public_prices_owner_authenticated_and_name_only(self):
+  with patch.object(pricing,'public_prices',return_value={'results':[]}) as lookup:
+   self.api('benefits/public-prices','POST',{'name':'Example','member_id':'PRIVATE','directions':'PRIVATE'})
+   lookup.assert_called_once_with('Example')
+  self.call(client(),'/api/medicine/benefits/public-prices','POST',{'name':'Example'},status=401)
+  self.call(self.a,'/api/medicine/benefits/public-prices','POST',{'name':'Example'},'wrong',403)
+  with patch.object(pricing,'public_prices',side_effect=catalog.CatalogUnavailable):self.api('benefits/public-prices','POST',{'name':'Example'},502)
+
 class ProviderTests(unittest.TestCase):
  def test_signed_request_filters_fill_mismatches_and_preserves_zero(self):
   rx={'name':'Example','strength':'10 mg','ndc':'1234-5678-90','rx_number':'PRIVATE_RX','directions':'PRIVATE_DIR'};fill=dict(quantity='30',zip='10001',form='tablet',unit='tablets',days_supply='30')
@@ -54,6 +71,26 @@ class ProviderTests(unittest.TestCase):
    params=urllib.parse.parse_qs(payload);self.assertEqual(params['ndc'],['01234567890']);self.assertNotIn('PRIVATE',url);self.assertNotIn('synthetic-secret',url)
    self.assertEqual(pricing.compare(rx,dict(fill,quantity='90'))['results'],[])
   for code,expected in [('1234-5678-90','01234567890'),('12345-678-90','12345067890'),('12345-6789-0','12345678900'),('1234567890','')]:self.assertEqual(pricing.ndc11(code),expected)
+
+ def test_name_browse_prices_across_doses_without_manual_fill_fields(self):
+  def upstream(url):
+   q=urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+   self.assertNotIn('metric_quantity',q);self.assertNotIn('ndc',q)
+   if '/drug-info?' in url:return {'data':{'drugs':{'tablet':{'10mg':'','20mg':''}}}}
+   dose=q['dosage'][0]
+   return {'data':{'display':'Example','dosage':dose,'form':'tablet','metric_quantity':30,'days_supply':'30','prices':[{'pharmacy':'Example pharmacy','type':'coupon','price':0 if dose=='10mg' else 12.34}]}}
+  with patch.dict(os.environ,{'PANTRY_GOODRX_ENABLED':'1','PANTRY_GOODRX_API_KEY':'synthetic-api-key','PANTRY_GOODRX_SECRET':'synthetic-secret'}),patch.object(catalog,'fetch',side_effect=upstream):
+   rows=pricing.browse('Example')['variants'];self.assertEqual([v['strength'] for v in rows],['10mg','20mg']);self.assertEqual(rows[0]['results'][0]['price'],'0.00');self.assertEqual(rows[1]['results'][0]['price'],'12.34');self.assertEqual(rows[0]['quantity'],'30')
+  with patch.dict(os.environ,{'PANTRY_GOODRX_ENABLED':'0'}),patch.object(catalog,'fetch') as f:self.assertFalse(pricing.browse('Example')['configured']);f.assert_not_called()
+
+ def test_public_catalog_prices_are_not_inferred_and_cache_has_no_user_query(self):
+  base={'medication_name':'Example','brand_name':'Example Brand','strength':'10mg','form':'Tablet','brand_generic':'Generic','sample_volume':'30 count','url':'https://www.costplusdrugs.com/medications/example','cpd_channel':{'sample_pack_price_total_to_patient_without_shipping':'0','sample_pack_price_w_shipping_dispensing':'5.25','cash_shipping_cost':5.25,'cash_dispensing_fee':0,'in_stock':True,'currency':'USD'}}
+  other=dict(base,strength='20mg',cpd_channel=dict(base['cpd_channel'],sample_pack_price_total_to_patient_without_shipping='12.34'))
+  invalid=dict(base,strength='30mg',url='https://evil.invalid/')
+  with patch.object(pricing,'_public_catalog',None),patch.object(catalog,'fetch',return_value=[base,other,invalid]) as f:
+   r=pricing.public_prices('Example');self.assertEqual(len(r['results']),2);self.assertEqual(r['results'][0]['price'],'0.00');self.assertEqual(r['results'][0]['fill_size'],'30 count');self.assertEqual(r['results'][1]['price'],'12.34')
+   self.assertTrue(pricing.public_prices('Example Brand')['results'][0]['generic_alternative']);self.assertEqual(pricing.public_prices('Unrelated')['results'],[]);self.assertEqual(pricing.public_prices('(Oral Pill)')['results'],[])
+   f.assert_called_once_with('https://api.costplusdrugs.com/pricelist/cpd')
  def test_pharmacy_directory_is_zip_only_and_fixed_classification(self):
   with patch.object(catalog,'fetch',return_value=[1,['1234567890'],None,[['Example Pharmacy','Example address','212-555-0100','Pharmacy']]]) as f:r=catalog.pharmacies('10001')
   self.assertEqual(r['results'][0]['key'],'1234567890');q=urllib.parse.parse_qs(urllib.parse.urlsplit(f.call_args.args[0]).query);self.assertEqual(q['terms'],['10001']);self.assertIn('Pharmacy',q['q'][0])
