@@ -106,7 +106,7 @@ if __name__=='__main__':unittest.main()
 class LocalPricingTests(unittest.TestCase):
  def setUp(self):pricing._local_calls.clear()
  def fixture(self,**changes):
-  d=dict(matched=True,drug='Example 10MG',priced_strength='10 mg',quantity=30,days=30,zip='10001',pharmacies=[dict(name='Pharmacy A',price_usd=0,address1='1 Example St'),dict(name='Mail order',price_usd=1,isOnlineOnly=True),dict(name='Invalid',price_usd='NaN')],card={'bin':'123456','pcn':'TEST','group':'TEST'},page_url='https://www.lowerscript.com/price-check',card_page_url='javascript:bad',as_of='2026-10-26T00:00:00Z');d.update(changes)
+  d=dict(matched=True,drug='Example 10MG',priced_strength='10 mg',quantity=30,days=30,zip='10001',pharmacies=[dict(name='Pharmacy A',price_usd=0,distance=1,address1='1 Example St'),dict(name='Mail order',price_usd=1,isOnlineOnly=True),dict(name='Invalid',price_usd='NaN')],card={'bin':'123456','pcn':'TEST','group':'TEST'},page_url='https://www.lowerscript.com/price-check',card_page_url='javascript:bad',as_of='2026-10-26T00:00:00Z');d.update(changes)
   return {'result':{'content':[{'type':'text','text':json.dumps(d)}]}}
  def test_public_transport_minimal_payload_and_real_zero(self):
   with patch.object(catalog,'fetch',return_value=self.fixture()) as fetch:
@@ -124,3 +124,8 @@ class LocalPricingTests(unittest.TestCase):
    for i in range(3):pricing.local_prices('Example','10001')
    self.assertEqual(pricing.local_prices('Example','10001')['status'],'rate_limited');self.assertEqual(fetch.call_count,3)
    self.assertTrue(all(isinstance(t,float) for t in pricing._local_calls))
+
+ def test_twenty_mile_boundary_missing_distances_and_publix(self):
+  pharmacies=[dict(name='Publix',price_usd=12,distance=20),dict(name='Too far',price_usd=1,distance=20.01),dict(name='Unknown',price_usd=2),dict(name='Invalid',price_usd=3,distance='NaN'),dict(name='Negative',price_usd=4,distance=-1),dict(name='Nearest',price_usd=0,distance=0)]
+  with patch.object(catalog,'fetch',return_value=self.fixture(pharmacies=pharmacies)):
+   r=pricing.local_prices('Example','10001');self.assertEqual([p['pharmacy'] for p in r['results']],['Nearest','Publix']);self.assertEqual(r['outside_radius'],1);self.assertEqual(r['unknown_distance'],3);self.assertFalse(r['coverage_complete']);self.assertEqual(r['radius_miles'],20)

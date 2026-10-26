@@ -166,12 +166,17 @@ def local_prices(name,zip,strength=''):
    p=urllib.parse.urlsplit(v)
    return v if p.scheme=='https' and p.hostname in ('www.lowerscript.com','lowerscript.com') and not p.username and not p.password else ''
   except (ValueError,TypeError):return ''
- rows=[]
+ rows=[];outside=0;unknown=0
  for p in (d.get('pharmacies') or [])[:10]:
   if not isinstance(p,dict) or not p.get('name') or p.get('isOnlineOnly') is True:continue
   price=money(p.get('price_usd'))
   if price is None:continue
-  rows.append({'pharmacy':str(p['name'])[:200],'price':price,'address':', '.join(str(p.get(k,''))[:200] for k in ('address1','city','state','postalCode') if p.get(k)),'distance':str(p.get('distance',''))[:20]})
+  try:
+   distance=decimal.Decimal(str(p.get('distance','')))
+   if not distance.is_finite() or distance<0:raise ValueError()
+  except (decimal.DecimalException,ValueError):unknown+=1;continue
+  if distance>20:outside+=1;continue
+  rows.append({'pharmacy':str(p['name'])[:200],'price':price,'address':', '.join(str(p.get(k,''))[:200] for k in ('address1','city','state','postalCode') if p.get(k)),'distance':str(distance)})
  rows.sort(key=lambda r:decimal.Decimal(r['price']))
  card=d.get('card') or {}
- return {'results':rows,'status':'ok' if rows else 'no_prices','drug':drug,'strength':dose,'quantity':str(quantity),'days_supply':str(days),'source':'LowerScript','checked_at':str(d.get('as_of',''))[:80],'url':safe(d.get('page_url','')),'card_url':safe(d.get('card_page_url','')),'card':{k:str(card.get(k,''))[:40] for k in ('bin','pcn','group')},'notice':'LowerScript discount-card prices, not insurance or GoodRx prices. Cannot be combined with insurance, Medicare or Medicaid. Show the LowerScript card to use these prices. The provider supplies the labeled fill size; prices can change. No prescription, purchase or transfer is made.'}
+ return {'radius_miles':20,'coverage_complete':False,'provider_result_limit':10,'outside_radius':outside,'unknown_distance':unknown,'results':rows,'status':'ok' if rows else 'no_prices','drug':drug,'strength':dose,'quantity':str(quantity),'days_supply':str(days),'source':'LowerScript','checked_at':str(d.get('as_of',''))[:80],'url':safe(d.get('page_url','')),'card_url':safe(d.get('card_page_url','')),'card':{k:str(card.get(k,''))[:40] for k in ('bin','pcn','group')},'notice':'LowerScript discount-card prices, not insurance or GoodRx prices. Cannot be combined with insurance, Medicare or Medicaid. Show the LowerScript card to use these prices. The provider supplies the labeled fill size; prices can change. No prescription, purchase or transfer is made.'}
