@@ -166,3 +166,9 @@ Version 0.14.2 replaces the pharmacy-directory/call-for-prices flow with automat
 ## Twenty-mile price scope — October 26, 2026
 
 Version 0.14.3 explicitly filters local prices to provider-reported ZIP-search distances of 20 miles or less, with counts for farther and unknown-distance results. The interface states that the supplier returns at most ten locations and coverage is incomplete. Tests exercise the exact boundary, farther distances, missing/nonfinite/negative distances, zero prices and preservation of Publix rows. The provider's documented tool schema was inspected: no radius, pagination or larger result-limit argument is available. This change does not claim prices for every pharmacy.
+
+## Curved-label scanner — October 26, 2026
+
+Version 0.15.0 adds live rear-camera capture with supported continuous autofocus, local crop/rotation controls, retained image detail, contrast enhancement, several segmentation passes, an optional cylindrical correction pass and multi-view field reconciliation. Per-line confidence replaces the old whole-image gate; conflicting readings are flagged and subsequent views preserve reviewed form values. Images and label text remain on the device, with existing review-before-save gating.
+
+Synthetic full-label browser OCR extracted name, strength, directions, quantity, unit, refills, printed dates, pharmacy/address/phone, prescriber, Rx number and NDC. An angled front panel filled medicine/directions/quantity. Multi-view and cancellation checks are recorded separately in the private release verification. 70 Python tests passed; JavaScript tests include new low-confidence-line, multi-view/conflict, zero-refill/leading-zero and unreadable-text cases. Physical phone autofocus and actual bottle accuracy remain unverified. See docs/PRESCRIPTION_SCANNING.md.
