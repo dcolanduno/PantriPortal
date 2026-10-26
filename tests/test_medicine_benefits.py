@@ -60,6 +60,14 @@ class BenefitsTests(unittest.TestCase):
   self.call(self.a,'/api/medicine/benefits/public-prices','POST',{'name':'Example'},'wrong',403)
   with patch.object(pricing,'public_prices',side_effect=catalog.CatalogUnavailable):self.api('benefits/public-prices','POST',{'name':'Example'},502)
 
+ def test_local_prices_auth_validation_and_minimal_payload(self):
+  with patch.object(pricing,'local_prices',return_value={'results':[]}) as lookup:
+   self.api('benefits/local-prices','POST',{'name':'Example','zip':'10001','member_id':'PRIVATE','notes':'PRIVATE'})
+   lookup.assert_called_once_with('Example','10001','')
+  self.call(client(),'/api/medicine/benefits/local-prices','POST',{'name':'Example','zip':'10001'},status=401)
+  self.call(self.a,'/api/medicine/benefits/local-prices','POST',{'name':'Example','zip':'10001'},'wrong',403)
+  self.api('benefits/local-prices','POST',{'name':'Example','zip':'bad'},400)
+
 class ProviderTests(unittest.TestCase):
  def test_signed_request_filters_fill_mismatches_and_preserves_zero(self):
   rx={'name':'Example','strength':'10 mg','ndc':'1234-5678-90','rx_number':'PRIVATE_RX','directions':'PRIVATE_DIR'};fill=dict(quantity='30',zip='10001',form='tablet',unit='tablets',days_supply='30')
@@ -95,3 +103,24 @@ class ProviderTests(unittest.TestCase):
   with patch.object(catalog,'fetch',return_value=[1,['1234567890'],None,[['Example Pharmacy','Example address','212-555-0100','Pharmacy']]]) as f:r=catalog.pharmacies('10001')
   self.assertEqual(r['results'][0]['key'],'1234567890');q=urllib.parse.parse_qs(urllib.parse.urlsplit(f.call_args.args[0]).query);self.assertEqual(q['terms'],['10001']);self.assertIn('Pharmacy',q['q'][0])
 if __name__=='__main__':unittest.main()
+class LocalPricingTests(unittest.TestCase):
+ def setUp(self):pricing._local_calls.clear()
+ def fixture(self,**changes):
+  d=dict(matched=True,drug='Example 10MG',priced_strength='10 mg',quantity=30,days=30,zip='10001',pharmacies=[dict(name='Pharmacy A',price_usd=0,address1='1 Example St'),dict(name='Mail order',price_usd=1,isOnlineOnly=True),dict(name='Invalid',price_usd='NaN')],card={'bin':'123456','pcn':'TEST','group':'TEST'},page_url='https://www.lowerscript.com/price-check',card_page_url='javascript:bad',as_of='2026-10-26T00:00:00Z');d.update(changes)
+  return {'result':{'content':[{'type':'text','text':json.dumps(d)}]}}
+ def test_public_transport_minimal_payload_and_real_zero(self):
+  with patch.object(catalog,'fetch',return_value=self.fixture()) as fetch:
+   r=pricing.local_prices('Example (Oral Pill)','10001','10mg');self.assertEqual(len(r['results']),1);self.assertEqual(r['results'][0]['price'],'0.00');self.assertEqual(r['card_url'],'')
+   self.assertEqual(fetch.call_args.args[0],'https://www.lowerscript.com/.netlify/functions/mcp');self.assertEqual(fetch.call_args.args[1]['params']['arguments'],{'drug':'Example','zip':'10001','strength':'10mg'})
+ def test_mismatched_identity_fill_and_area_not_accepted(self):
+  for changes in [dict(zip='10002'),dict(drug='Different 10MG'),dict(priced_strength='20 mg'),dict(quantity=0),dict(days='NaN')]:
+   pricing._local_calls.clear()
+   with patch.object(catalog,'fetch',return_value=self.fixture(**changes)),self.assertRaises(catalog.CatalogUnavailable):pricing.local_prices('Example','10001','10 mg')
+  pricing._local_calls.clear()
+  with patch.object(catalog,'fetch',return_value=self.fixture(matched=False)):
+   self.assertEqual(pricing.local_prices('Example','10001')['status'],'no_prices')
+ def test_shared_limit_without_private_search_cache(self):
+  with patch.object(catalog,'fetch',return_value=self.fixture()) as fetch:
+   for i in range(3):pricing.local_prices('Example','10001')
+   self.assertEqual(pricing.local_prices('Example','10001')['status'],'rate_limited');self.assertEqual(fetch.call_count,3)
+   self.assertTrue(all(isinstance(t,float) for t in pricing._local_calls))

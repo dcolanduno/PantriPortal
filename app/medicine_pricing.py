@@ -89,7 +89,7 @@ def browse(name,zip=''):
 
 
 # Shared public catalog only. No user IDs, drug searches, ZIPs or profiles enter this cache.
-import threading,time
+import threading,time,json
 _public_lock=threading.Lock()
 _public_catalog=None
 _public_loaded=0
@@ -126,3 +126,52 @@ def public_prices(name):
   seen.add(k);rows.append({'name':str(p.get('medication_name',''))[:160],'strength':str(p.get('strength',''))[:120],'form':str(p.get('form',''))[:120],'fill_size':volume,'price':price,'shipping':shipping,'total':total,'dispensing_fee':money(channel.get('cash_dispensing_fee')),'in_stock':channel.get('in_stock') is True,'kind':str(p.get('brand_generic',''))[:40],'generic_alternative':not exact and p.get('brand_generic')=='Generic','url':url})
  rows.sort(key=lambda r:tuple(float(v) if re.fullmatch(r'\d+(?:\.\d+)?',v) else v.casefold() for v in re.split(r'(\d+(?:\.\d+)?)',r['strength'])))
  return {'results':rows[:100],'source':'Cost Plus Drugs public price catalog','fetched_at':fetched,'notice':'Mail-order cash price examples, not nearby pharmacy or insurance quotes. Fill sizes are supplied by the pharmacy; dispensing is included in the cash price, standard shipping is shown separately. No purchase, transfer or prescription change is made. Catalog prices are cached up to one hour; verify on the pharmacy product page.'}
+
+# Public, documented LowerScript MCP interface. No patient identifiers or search cache.
+_local_calls=[]
+_local_lock=threading.Lock()
+
+def local_prices(name,zip,strength=''):
+ name=re.sub(r'\s*\((?:Oral Pill|Oral Liquid|Oral|Topical|Injectable|Inhalant|Ophthalmic|Otic|Nasal|Rectal|Vaginal|Transdermal)\)\s*$','',name,flags=re.I).strip()
+ if not name or not re.fullmatch(r'\d{5}',zip):raise ValueError('Drug name and five-digit ZIP required.')
+ with _local_lock:
+  now=time.monotonic();_local_calls[:]=[t for t in _local_calls if now-t<86400]
+  if len(_local_calls)>=200 or sum(now-t<3600 for t in _local_calls)>=20 or sum(now-t<60 for t in _local_calls)>=3:
+   return {'results':[],'status':'rate_limited','notice':'Automatic local pricing has reached its provider allowance. Try again later. Mail-order prices remain separate.'}
+  _local_calls.append(now)
+ args={'drug':name,'zip':zip}
+ if strength:args['strength']=strength
+ raw=catalog.fetch('https://www.lowerscript.com/.netlify/functions/mcp',{'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':'get_prices','arguments':args}})
+ try:
+  result=raw['result']
+  if result.get('isError'):raise catalog.CatalogUnavailable()
+  d=json.loads(next(c['text'] for c in result['content'] if c.get('type')=='text'))
+  if not isinstance(d,dict):raise catalog.CatalogUnavailable()
+ except (KeyError,ValueError,TypeError,AttributeError,StopIteration):raise catalog.CatalogUnavailable() from None
+ if not d.get('matched'):
+  return {'results':[],'status':'no_prices','notice':'The local pricing service has no prices for this medicine or ZIP. It currently serves FL, TX, AZ, NC, SC, GA, IL and CA. No calls or manual quotes are needed; retry here later.'}
+ # Never accept another ZIP or an unidentifiable/default fill without labels.
+ drug=str(d.get('drug',''))[:200];dose=str(d.get('priced_strength',''))[:120]
+ def compact(v):return re.sub(r'\s+','',v).casefold()
+ requested=re.sub(r'[^a-z0-9]+',' ',name.casefold()).strip()
+ actual=re.sub(r'[^a-z0-9]+',' ',drug.casefold()).strip()
+ if not requested or not (actual==requested or re.match(re.escape(requested)+r' \d',actual)) or d.get('zip')!=zip or not dose or (strength and compact(dose)!=compact(strength)):
+  raise catalog.CatalogUnavailable()
+ try:
+  quantity=decimal.Decimal(str(d.get('quantity','')));days=decimal.Decimal(str(d.get('days','')))
+  if not quantity.is_finite() or quantity<=0 or not days.is_finite() or days<=0:raise ValueError()
+ except (decimal.DecimalException,ValueError):raise catalog.CatalogUnavailable() from None
+ def safe(v):
+  try:
+   p=urllib.parse.urlsplit(v)
+   return v if p.scheme=='https' and p.hostname in ('www.lowerscript.com','lowerscript.com') and not p.username and not p.password else ''
+  except (ValueError,TypeError):return ''
+ rows=[]
+ for p in (d.get('pharmacies') or [])[:10]:
+  if not isinstance(p,dict) or not p.get('name') or p.get('isOnlineOnly') is True:continue
+  price=money(p.get('price_usd'))
+  if price is None:continue
+  rows.append({'pharmacy':str(p['name'])[:200],'price':price,'address':', '.join(str(p.get(k,''))[:200] for k in ('address1','city','state','postalCode') if p.get(k)),'distance':str(p.get('distance',''))[:20]})
+ rows.sort(key=lambda r:decimal.Decimal(r['price']))
+ card=d.get('card') or {}
+ return {'results':rows,'status':'ok' if rows else 'no_prices','drug':drug,'strength':dose,'quantity':str(quantity),'days_supply':str(days),'source':'LowerScript','checked_at':str(d.get('as_of',''))[:80],'url':safe(d.get('page_url','')),'card_url':safe(d.get('card_page_url','')),'card':{k:str(card.get(k,''))[:40] for k in ('bin','pcn','group')},'notice':'LowerScript discount-card prices, not insurance or GoodRx prices. Cannot be combined with insurance, Medicare or Medicaid. Show the LowerScript card to use these prices. The provider supplies the labeled fill size; prices can change. No prescription, purchase or transfer is made.'}

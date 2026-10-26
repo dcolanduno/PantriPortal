@@ -555,7 +555,7 @@ class Handler(BaseHTTPRequestHandler):
   if self.command=='GET' and self.static(p):return
   if p=='/api/health' and self.command=='GET':
    with db() as c:c.execute('SELECT 1')
-   return self.send(200,{'status':'ok','version':'0.14.1'})
+   return self.send(200,{'status':'ok','version':'0.14.2'})
   if p=='/api/features' and self.command=='GET':
    from local_images import ready
    return self.send(200,{'local_images':ready()})

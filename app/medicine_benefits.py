@@ -21,6 +21,12 @@ def handle(h,u,tail):
  if not tail.startswith('benefits/'):return False
  action=tail.removeprefix('benefits/');method=h.command;uid=u['user_id']
  if action=='provider-status' and method=='GET':h.send(200,pricing.status());return True
+ if action=='local-prices' and method=='POST':
+  _api.limit('medicine-local-prices:'+uid,3,60);d=h.body();name=text(d,'name',160,True);zip=text(d,'zip',5,True);strength=text(d,'strength',120)
+  if not re.fullmatch(r'\d{5}',zip):fail('Enter a five-digit ZIP to load local prices.')
+  try:result=pricing.local_prices(name,zip,strength)
+  except catalog.CatalogUnavailable:fail('The local pricing service is temporarily unavailable. Retry here later; no phone calls or manual quotes are required.',502)
+  h.send(200,result);return True
  if action=='public-prices' and method=='POST':
   _api.limit('medicine-public-prices:'+uid,60,60);name=text(h.body(),'name',160,True)
   try:result=pricing.public_prices(name)
