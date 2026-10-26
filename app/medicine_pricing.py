@@ -1,5 +1,5 @@
 """Official GoodRx V2 adapter. Disabled until the operator configures approved access."""
-import os,re,base64,hmac,hashlib,urllib.parse,datetime,decimal
+import os,re,base64,hmac,hashlib,urllib.parse,datetime,decimal,threading,time
 import medicine_catalog as catalog
 
 def configured():return os.environ.get('PANTRY_GOODRX_ENABLED')=='1' and bool(os.environ.get('PANTRY_GOODRX_API_KEY')) and bool(os.environ.get('PANTRY_GOODRX_SECRET'))
@@ -127,11 +127,96 @@ def public_prices(name):
  rows.sort(key=lambda r:tuple(float(v) if re.fullmatch(r'\d+(?:\.\d+)?',v) else v.casefold() for v in re.split(r'(\d+(?:\.\d+)?)',r['strength'])))
  return {'results':rows[:100],'source':'Cost Plus Drugs public price catalog','fetched_at':fetched,'notice':'Mail-order cash price examples, not nearby pharmacy or insurance quotes. Fill sizes are supplied by the pharmacy; dispensing is included in the cash price, standard shipping is shown separately. No purchase, transfer or prescription change is made. Catalog prices are cached up to one hour; verify on the pharmacy product page.'}
 
+# Keyed FineRx source; disabled until the operator has requested and privately configured access.
+_finerx_calls=[]
+_finerx_lock=threading.Lock()
+
+def finerx_configured():
+ return os.environ.get('PANTRY_FINERX_ENABLED')=='1' and bool(os.environ.get('PANTRY_FINERX_API_KEY'))
+
+def finerx_status():
+ return {'provider':'FineRx','configured':finerx_configured(),'application_url':'https://www.finerxfinder.com/en/developers'}
+
+def finerx_prices(name,zip,strength=''):
+ name=re.sub(r'\s*\((?:Oral Pill|Oral Liquid|Oral|Topical|Injectable|Inhalant|Ophthalmic|Otic|Nasal|Rectal|Vaginal|Transdermal)\)\s*$','',name,flags=re.I).strip()
+ if not name or not re.fullmatch(r'\d{5}',zip):raise ValueError('Drug name and five-digit ZIP required.')
+ key=os.environ['PANTRY_FINERX_API_KEY']
+ with _finerx_lock:
+  now=time.monotonic();_finerx_calls[:]=[t for t in _finerx_calls if now-t<86400]
+  if len(_finerx_calls)>=5000 or sum(now-t<60 for t in _finerx_calls)>=60:
+   return {'results':[],'status':'rate_limited','source':'FineRx','notice':'Automatic local pricing has reached its provider allowance. Try again later.'}
+  _finerx_calls.append(now)
+ payload={'drug':name,'zip':zip,'radiusMiles':20,'channel':'api'}
+ if strength:payload['strength']=strength
+ d=catalog.fetch('https://finerxfinder.com/api/public/v1/prices/near',payload,{'X-Api-Key':key})
+ if not isinstance(d,dict):raise catalog.CatalogUnavailable()
+ drug=d.get('drug') or {}
+ if not isinstance(drug,dict):raise catalog.CatalogUnavailable()
+ actual=str(drug.get('name') or '')
+ def compact(v):return re.sub(r'[^a-z0-9]+','',str(v).casefold())
+ wanted=compact(name);found=compact(actual)
+ if not wanted or not found or not (wanted==found or (found.startswith(wanted) and found[len(wanted):len(wanted)+1].isdigit())):raise catalog.CatalogUnavailable()
+ package=d.get('package') or {}
+ if not isinstance(package,dict):raise catalog.CatalogUnavailable()
+ dose=str(package.get('strength') or '')[:120]
+ if strength and (not dose or compact(dose)!=compact(strength)):raise catalog.CatalogUnavailable()
+ quantity=package.get('quantity');label=str(package.get('label') or '')[:160]
+ if quantity is not None:
+  try:
+   quantity=decimal.Decimal(str(quantity))
+   if not quantity.is_finite() or quantity<=0 or quantity>100000:raise ValueError()
+   quantity=str(quantity)
+  except (decimal.DecimalException,ValueError):raise catalog.CatalogUnavailable() from None
+ rows=[];far=0;unknown=0;reported=0;chains=d.get('chains')
+ if not isinstance(chains,list):raise catalog.CatalogUnavailable()
+ for chain in chains[:200]:
+  if not isinstance(chain,dict):continue
+  chain_name=str(chain.get('name') or '')[:160]
+  if not chain_name:continue
+  price_data=chain.get('price') or {};amount=money(price_data.get('amount')) if isinstance(price_data,dict) else None
+  observed=str(price_data.get('observedAt',''))[:20] if isinstance(price_data,dict) else ''
+  try:
+   if not re.fullmatch(r'\d{4}-\d\d-\d\d',observed) or datetime.date.fromisoformat(observed)>datetime.date.today():raise ValueError()
+  except ValueError:observed='';amount=None
+  try:
+   store_count=int(chain.get('storeCount',0));store_count=max(0,min(store_count,100000))
+  except (ValueError,TypeError):store_count=0
+  stores=chain.get('stores') or []
+  if not isinstance(stores,list):stores=[]
+  eligible=[]
+  for store in stores[:500]:
+   if not isinstance(store,dict):continue
+   try:
+    miles=decimal.Decimal(str(store.get('miles','')))
+    if not miles.is_finite() or miles<0:raise ValueError()
+   except (decimal.DecimalException,ValueError):unknown+=1;continue
+   if miles>20:far+=1;continue
+   eligible.append((store,miles))
+  if not eligible and chain.get('nearestMiles') is not None:
+   try:
+    miles=decimal.Decimal(str(chain['nearestMiles']))
+    if miles.is_finite() and 0<=miles<=20:eligible=[({},miles)]
+    elif miles>20:far+=1
+    else:unknown+=1
+   except (decimal.DecimalException,ValueError,TypeError):unknown+=1
+  reported+=store_count
+  for store,miles in eligible:
+   address=', '.join(str(store.get(k,''))[:160] for k in ('address','city','state','zip') if store.get(k))
+   rows.append({'pharmacy':str(store.get('name') or chain_name)[:180],'chain':chain_name,'price':amount,'observed_at':observed,'address':address,'distance':str(miles),'store_count':store_count})
+ rows.sort(key=lambda r:(r['price'] is None,decimal.Decimal(r['price']) if r['price'] is not None else decimal.Decimal('Infinity'),r['distance'],r['pharmacy'].casefold()))
+ coverage=d.get('coverage') or {};meta=d.get('meta') or {}
+ if not isinstance(coverage,dict) or not isinstance(meta,dict):raise catalog.CatalogUnavailable()
+ attributions=d.get('attributions') or []
+ if not isinstance(attributions,list):attributions=[]
+ site='https://finerxfinder.com/'
+ return {'radius_miles':20,'coverage_complete':False,'outside_radius':far,'unknown_distance':unknown,'reported_locations':reported,'results':rows,'status':'ok' if rows else 'no_prices','drug':actual,'strength':dose,'quantity':quantity or '', 'package':label,'source':'FineRx','checked_at':str(meta.get('observedAt',''))[:80], 'card_url':site,'url':site,'card':{},'coverage_status':str(coverage.get('status',''))[:80], 'attributions':[str(x)[:200] for x in attributions[:12]], 'notice':str(meta.get('disclaimer') or 'Prices via FineRx are recently observed discount estimates, not guaranteed or insured prices. Verify at the pharmacy.')[:1000]+' The provider reports supported local stores; coverage may be incomplete. Price is chain-level and may differ by branch. FineRx may receive commission when its free card is used.'}
+
 # Public, documented LowerScript MCP interface. No patient identifiers or search cache.
 _local_calls=[]
 _local_lock=threading.Lock()
 
 def local_prices(name,zip,strength=''):
+ if finerx_configured():return finerx_prices(name,zip,strength)
  name=re.sub(r'\s*\((?:Oral Pill|Oral Liquid|Oral|Topical|Injectable|Inhalant|Ophthalmic|Otic|Nasal|Rectal|Vaginal|Transdermal)\)\s*$','',name,flags=re.I).strip()
  if not name or not re.fullmatch(r'\d{5}',zip):raise ValueError('Drug name and five-digit ZIP required.')
  with _local_lock:

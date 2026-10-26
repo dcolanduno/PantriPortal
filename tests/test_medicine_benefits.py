@@ -129,3 +129,38 @@ class LocalPricingTests(unittest.TestCase):
   pharmacies=[dict(name='Publix',price_usd=12,distance=20),dict(name='Too far',price_usd=1,distance=20.01),dict(name='Unknown',price_usd=2),dict(name='Invalid',price_usd=3,distance='NaN'),dict(name='Negative',price_usd=4,distance=-1),dict(name='Nearest',price_usd=0,distance=0)]
   with patch.object(catalog,'fetch',return_value=self.fixture(pharmacies=pharmacies)):
    r=pricing.local_prices('Example','10001');self.assertEqual([p['pharmacy'] for p in r['results']],['Nearest','Publix']);self.assertEqual(r['outside_radius'],1);self.assertEqual(r['unknown_distance'],3);self.assertFalse(r['coverage_complete']);self.assertEqual(r['radius_miles'],20)
+
+class FineRxTests(unittest.TestCase):
+ def setUp(self):pricing._finerx_calls.clear()
+ def fixture(self,**changes):
+  d={'drug':{'name':'Example'},'package':{'strength':'10 mg','quantity':30,'label':'30 tablets'},'coverage':{'status':'partial','quantities':[30]},'chains':[
+   {'family':'Publix','name':'Publix','price':{'amount':12.34,'observedAt':'2026-10-25'},'storeCount':2,'nearestMiles':3.2,'stores':[{'name':'Publix Roswell','address':'1 Main St','city':'Roswell','state':'GA','zip':'30076','miles':3.2,'lat':34.0,'lon':-84.0,'kind':'retail'},{'name':'Publix Alpharetta','address':'2 Main St','city':'Alpharetta','state':'GA','zip':'30009','miles':20.01,'lat':34.0,'lon':-84.0,'kind':'retail'}]},
+   {'family':'CVS','name':'CVS','price':None,'storeCount':1,'nearestMiles':8,'stores':[{'name':'CVS Roswell','address':'3 Main St','city':'Roswell','state':'GA','zip':'30076','miles':8,'lat':34.0,'lon':-84.0,'kind':'retail'}]}],
+   'pricesWithoutStores':[],'needsZip':False,'card':{'siteUrl':'https://finerxfinder.com/','chainsCount':34},'attributions':['Prices via FineRx'],'meta':{'source':'FineRx','disclaimer':'Observed estimates, not guaranteed.'}}
+  d.update(changes);return d
+ def test_nearby_api_sends_minimal_data_and_returns_supported_chains_inside_radius(self):
+  with patch.dict(os.environ,{'PANTRY_FINERX_ENABLED':'1','PANTRY_FINERX_API_KEY':'synthetic-finerx-key'}),patch.object(catalog,'fetch',return_value=self.fixture()) as fetch:
+   r=pricing.finerx_prices('Example','30076','10 mg')
+  self.assertEqual(fetch.call_args.args[0],'https://finerxfinder.com/api/public/v1/prices/near')
+  self.assertEqual(fetch.call_args.args[1],{'drug':'Example','zip':'30076','radiusMiles':20,'channel':'api','strength':'10 mg'})
+  self.assertEqual(fetch.call_args.args[2],{'X-Api-Key':'synthetic-finerx-key'})
+  self.assertEqual([p['pharmacy'] for p in r['results']],['Publix Roswell','CVS Roswell'])
+  self.assertEqual(r['results'][0]['price'],'12.34');self.assertIsNone(r['results'][1]['price'])
+  self.assertEqual(r['results'][0]['observed_at'],'2026-10-25');self.assertEqual(r['results'][0]['chain'],'Publix')
+  self.assertEqual(r['outside_radius'],1);self.assertFalse(r['coverage_complete']);self.assertEqual(r['source'],'FineRx')
+  self.assertIn('Prices via FineRx',r['attributions'][0]);self.assertIn('not guaranteed',r['notice'])
+  self.assertNotIn('synthetic-finerx-key',json.dumps(r))
+ def test_finerx_name_and_strength_mismatches_are_rejected(self):
+  cases=[{'drug':{'name':'Another drug'}},{'package':{'strength':'20 mg','quantity':30}},{'chains':None}]
+  for changed in cases:
+   d=self.fixture(**changed)
+   with patch.dict(os.environ,{'PANTRY_FINERX_ENABLED':'1','PANTRY_FINERX_API_KEY':'synthetic-finerx-key'}),patch.object(catalog,'fetch',return_value=d):
+    with self.assertRaises(catalog.CatalogUnavailable):pricing.finerx_prices('Example','30076','10 mg')
+ def test_undated_price_is_unknown(self):
+  d=self.fixture();d['chains'][0]['price']['observedAt']='unknown'
+  with patch.dict(os.environ,{'PANTRY_FINERX_ENABLED':'1','PANTRY_FINERX_API_KEY':'synthetic-finerx-key'}),patch.object(catalog,'fetch',return_value=d):
+   r=pricing.finerx_prices('Example','30076','10 mg')
+  self.assertIsNone(r['results'][0]['price']);self.assertEqual(r['results'][0]['observed_at'],'')
+ def test_finerx_remains_disabled_without_private_operator_configuration(self):
+  with patch.dict(os.environ,{'PANTRY_FINERX_ENABLED':'1','PANTRY_FINERX_API_KEY':''}),patch.object(catalog,'fetch') as fetch:
+   self.assertFalse(pricing.finerx_configured());self.assertFalse(pricing.finerx_status()['configured']);fetch.assert_not_called()

@@ -38,6 +38,8 @@ Install `requirements-dev.txt` to regenerate the handbook with `python tools/bui
 
 Deploy `medicine_catalog.py` alongside `medicine_ops.py` and `medicine.js` from the same tested release. Reference services require outbound HTTPS to `clinicaltables.nlm.nih.gov` and `api.fda.gov`. Optional Google Places requires `places.googleapis.com` and a private `PANTRY_GOOGLE_PLACES_KEY` service environment setting; never commit it or include it in release metadata. Without that setting the NIH doctor directory remains available. Existing `/api/` proxying and `/medicine.js` static exposure cover these changes. No additional schema tables or packages are introduced; the two optional prescription identity fields are additive JSON properties. Restart the Python application after release activation and check health version 0.12.0 plus the affected signed-in forms.
 
+Optional FineRx nearby price lookup requires an issued API key from FineRx (`https://www.finerxfinder.com/en/developers`). Configure only in the private service environment with `PANTRY_FINERX_ENABLED=1` and `PANTRY_FINERX_API_KEY`; restart `pantry-app` afterward. Without both settings, the existing LowerScript public lookup remains in use. The key is sent in the server-side `X-Api-Key` header to the fixed HTTPS `finerxfinder.com` API endpoint; it is never sent to the browser, placed in a URL, or logged. FineRx requires visible price attribution and an observed-price disclaimer. Price requests contain only the drug name, optional strength and saved ZIP, use the 20-mile radius parameter, and are not cached. Validate a real authorized key and a provider response before claiming FineRx is active. Never add credentials to the release artifact.
+
 
 ## Prescription label scanner (0.13.0)
 
