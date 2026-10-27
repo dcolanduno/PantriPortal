@@ -1,6 +1,6 @@
 # Prescription label capture and OCR
 
-Version 0.15.2 opens the rear camera as soon as the signed-in user starts a label scan. OCR keeps sampling the live camera while it is open, so the user can hold one panel steady and slowly turn the bottle to read the next side without taking a separate photo for each view. The same local OCR reads uploaded or camera photos when live access is unavailable. Images and full label text stay in the browser; NDC reference lookup remains explicit and sends only the chosen code.
+Version 0.15.3 opens the rear camera as soon as the signed-in user starts a label scan. OCR keeps sampling the live camera while it is open, enlarges a center crop of the label, and tries multiple page layouts. It retains lower-confidence lines for corroboration across passes and presents the best readable one-pass candidate for manual correction instead of suppressing all text. The same local OCR reads uploaded or camera photos when live access is unavailable. Images and full label text stay in the browser; NDC reference lookup remains explicit and sends only the chosen code. The person scanning must verify every field against the bottle before saving.
 
 ## Curved bottles
 

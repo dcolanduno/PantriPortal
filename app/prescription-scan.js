@@ -18,6 +18,11 @@ function cropCanvas(){
  const src=sourceCanvas,l=+$('#rx-crop-left').value/100,r=+$('#rx-crop-right').value/100,t=+$('#rx-crop-top').value/100,b=+$('#rx-crop-bottom').value/100;
  const w=Math.round(src.width*(1-l-r)),h=Math.round(src.height*(1-t-b)),scale=Math.min(2,2800/Math.max(w,h));const c=document.createElement('canvas');c.width=Math.round(w*scale)+40;c.height=Math.round(h*scale)+40;const ctx=c.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(src,src.width*l,src.height*t,w,h,20,20,c.width-40,c.height-40);return c;
 }
+function magnifyLabel(src){
+ // Keep the full view as a fallback, but give the bottle label most of the OCR pixels.
+ const x=Math.round(src.width*.16),y=Math.round(src.height*.12),w=Math.max(1,Math.round(src.width*.68)),h=Math.max(1,Math.round(src.height*.76)),scale=Math.min(3,2800/Math.max(w,h));
+ const c=document.createElement('canvas');c.width=Math.round(w*scale);c.height=Math.round(h*scale);c.getContext('2d').drawImage(src,x,y,w,h,0,0,c.width,c.height);return c;
+}
 function enhance(src){
  const c=document.createElement('canvas');c.width=src.width;c.height=src.height;const ctx=c.getContext('2d');ctx.drawImage(src,0,0);const im=ctx.getImageData(0,0,c.width,c.height),d=im.data,hist=new Uint32Array(256);
  for(let i=0;i<d.length;i+=4){const y=Math.round(.299*d[i]+.587*d[i+1]+.114*d[i+2]);d[i]=d[i+1]=d[i+2]=y;hist[y]++}
@@ -47,23 +52,24 @@ async function recognizeView(){
   await library('/vendor/tesseract.min.js','Tesseract');if(task!==serial)return;
   if(!worker)worker=await Tesseract.createWorker('eng',1,{logger:m=>{if(task===serial&&m.status==='recognizing text')status('Reading the live label… '+Math.round(m.progress*100)+'%')}});
   if(task!==serial)return;
-  const enhanced=enhance(canvas),binary=binarize(enhanced);canvases.push(enhanced,binary);const current=[];
-  // Live mode quickly samples enhanced, thresholded and de-curved frames; photo mode adds broader layouts.
-  const passes=liveScanning?[[enhanced,'6'],[binary,'6']]:[[canvas,'3'],[enhanced,'6'],[enhanced,'11'],[binary,'6']];
+  const enhanced=enhance(canvas),binary=binarize(enhanced),zoom=magnifyLabel(canvas),zoomEnhanced=enhance(zoom),zoomBinary=binarize(zoomEnhanced);canvases.push(enhanced,binary,zoom,zoomEnhanced,zoomBinary);const current=[];
+  // Inspect both the whole frame and an enlarged center region. Small bottle text
+  // often occupies too few pixels in the camera's full-resolution frame.
+  const passes=liveScanning?[[enhanced,'6'],[zoomEnhanced,'6'],[zoomEnhanced,'11'],[zoomBinary,'6']]:[[canvas,'3'],[enhanced,'6'],[enhanced,'11'],[binary,'6'],[zoomEnhanced,'6'],[zoomEnhanced,'11'],[zoomBinary,'6']];
   if($('#rx-label-curved').checked){const curved=uncurve(enhanced);canvases.push(curved);passes.push([curved,'6'])}
   for(const [image,mode] of passes){
    if(task!==serial)return;await worker.setParameters({tessedit_pageseg_mode:mode,user_defined_dpi:'300',preserve_interword_spaces:'1'});
    const result=await worker.recognize(image,{rotateAuto:true},{text:true,tsv:true});if(task!==serial)return;
    const r=parser.reading(result.data);if(r.text)current.push(r);
   }
-  const accepted=parser.consensus(current);if(!accepted.text){status(liveScanning?'Hold the label steady, reduce glare, and move it closer until the print is sharp. Scanning will keep trying.':'No reliably readable lines in this view. Try the crop controls, reduce glare, and hold steady. Existing details are preserved.');return}
+  const accepted=parser.consensus(current);if(!accepted.text){status(liveScanning?'No text candidate yet. Hold the label steady, move it closer, and reduce glare; scanning will keep trying.':'No text candidate in this view. Try the crop controls, reduce glare, and hold steady. Existing details are preserved.');return}
   const before=parser.combine(readings),fresh=parser.newLines(before.text,[accepted]);
   if(!fresh.length){if(liveScanning){status(views?'Still reading this side. Turn the bottle a little to reveal the next panel.':'Hold steady while the camera finds clear text.');return}status('No new clear text in this view. Adjust the crop, reduce glare, or try a sharper photo.');return}
   readings.push(accepted);readings=readings.slice(-24);views++;const combined=parser.combine(readings);$('#rx-label-text').value=combined.text;
   for(const [key] of fields){const input=$('#rx-label-review').elements[key];if(!input.value&&combined.fields[key]!==undefined)input.value=combined.fields[key]}
   $('#rx-label-products').replaceChildren();$('#rx-label-count').textContent=views+' readable view'+(views===1?'':'s')+' captured. Turn the same bottle to capture the remaining label.';
    const conflicts=combined.conflicts.map(key=>fields.find(f=>f[0]===key)?.[1]||key);
-   status(conflicts.length?'Different readings found for '+conflicts.join(', ')+'. Existing fields were kept; check them against the bottle.':liveScanning?'Clear text added. Turn the bottle slowly to scan the next section; the camera will keep reading.':'Readable details filled. Capture another side to fill missing fields, then check each field against the bottle.');
+   status(conflicts.length?'Different readings found for '+conflicts.join(', ')+'. Existing fields were kept; check them against the bottle.':accepted.confirmed?(liveScanning?'Text confirmed across image passes. Turn the bottle slowly to scan the next section.':'Text confirmed across image passes. Check the fields against the bottle.'):(liveScanning?'Best available text candidate added. Hold steady or adjust the label; check every character against the bottle.':'Best available text candidate added. Check every character against the bottle; capture another side for missing fields.'));
  }catch(err){if(task===serial)status('This view could not be read. Try a clearer close-up or adjust the crop. Details already captured are preserved.')}
   finally{for(const c of canvases)c.width=c.height=0;if(task===serial){reading=false;busy(false)}}
 }

@@ -23,4 +23,15 @@ test('scanner keeps lines confirmed by OCR passes and drops low-confidence one-o
  assert.equal(consensus([{text:'RX 001234',confidence:90}]).text,'RX 001234');
 });
 
+test('keeps low-confidence label words so independent image passes can recover them',()=>{
+ const {reading,consensus}=require('../app/prescription-label.js'),tsv='level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n5\t1\t1\t1\t1\t1\t0\t0\t10\t10\t37\tAMOXICILLIN\n5\t1\t1\t1\t1\t2\t0\t0\t10\t10\t42\t500 MG';
+ const first=reading({tsv,confidence:20});assert.equal(first.text,'AMOXICILLIN 500 MG');
+ const second={text:'AMOXICILLIN 500 MG',confidence:44};assert.equal(consensus([first,second]).text,'AMOXICILLIN 500 MG');
+});
+
+test('falls back to the strongest readable OCR pass when strict consensus would hide it',()=>{
+ const {consensus}=require('../app/prescription-label.js'),r=consensus([{text:'AMOXICILLIN 500 MG',confidence:73},{text:'AMOXICILIN 500 MG',confidence:56}]);
+ assert.equal(r.text,'AMOXICILLIN 500 MG');assert.equal(r.confirmed,false);
+});
+
 test('doctor contact labels are not prescriber names',()=>{const {parse}=require('../app/prescription-label.js');assert.equal(parse('Doctor Phone: 212-555-0101').label_prescriber,undefined);assert.equal(parse('Dr Example').label_prescriber,'Example');});

@@ -39,7 +39,9 @@ function reading(data){
  const lines=[...groups.values()].map(words=>({text:words.map(w=>w.text).join(' '),confidence:words.reduce((s,w)=>s+w.confidence,0)/words.length}));
  if(!lines.length)for(const line of data.lines||[])lines.push({text:line.text,confidence:Number(line.confidence)});
  if(!lines.length)lines.push(...String(data.text||'').split(/\r?\n/).map(text=>({text,confidence:Number(data.confidence)||0})));
- const good=lines.filter(l=>l.confidence>=55&&l.text&&/[a-z0-9]/i.test(l.text)&&((l.text.match(/[a-z0-9\s.,:;#()/%+\-]/gi)||[]).length/l.text.length)>=.85);
+ // Do not discard a useful label line simply because Tesseract is uncertain.
+ // The user sees and verifies the text before any prescription can be saved.
+ const good=lines.filter(l=>l.confidence>=20&&l.text&&/[a-z0-9]/i.test(l.text)&&((l.text.match(/[a-z0-9\s.,:;#()/%+\-]/gi)||[]).length/l.text.length)>=.65);
  return {text:good.map(l=>l.text.trim()).join('\n'),confidence:good.length?good.reduce((s,l)=>s+l.confidence,0)/good.length:0};
 }
 function combine(readings){
@@ -56,10 +58,14 @@ function newLines(existing,readings){
  return fresh;
 }
 function consensus(readings,minimumVotes=2,highConfidence=84){
- const normalize=line=>line.trim().toLowerCase().replace(/\s+/g,' '),lines=new Map();
- for(const reading of readings){const seen=new Set();for(const text of String(reading.text||'').split('\n').map(line=>line.trim()).filter(Boolean)){const key=normalize(text);if(!key||seen.has(key))continue;seen.add(key);const item=lines.get(key)||{text,votes:0,confidence:0};item.votes++;item.confidence=Math.max(item.confidence,Number(reading.confidence)||0);lines.set(key,item)}}
+ const normalize=line=>line.trim().toLowerCase().replace(/[^a-z0-9]+/g,' ').trim(),lines=new Map();
+ for(const reading of readings){const seen=new Set();for(const text of String(reading.text||'').split('\n').map(line=>line.trim()).filter(Boolean)){const key=normalize(text);if(!key||seen.has(key))continue;seen.add(key);const item=lines.get(key)||{text,votes:0,confidence:0};item.votes++;if((Number(reading.confidence)||0)>item.confidence){item.text=text;item.confidence=Number(reading.confidence)||0}lines.set(key,item)}}
  const good=[...lines.values()].filter(item=>item.votes>=minimumVotes||item.confidence>=highConfidence);
- return {text:good.map(item=>item.text).join('\n'),confidence:good.length?good.reduce((sum,item)=>sum+item.confidence,0)/good.length:0};
+ if(good.length)return {text:good.map(item=>item.text).join('\n'),confidence:good.reduce((sum,item)=>sum+item.confidence,0)/good.length,confirmed:good.every(item=>item.votes>=2)};
+ // Preserve the strongest readable one-pass candidate for human correction.
+ // A strict consensus gate made all imperfect but useful OCR appear blank.
+ const best=[...readings].filter(r=>r.text&&Number(r.confidence)>=70).sort((a,b)=>Number(b.confidence)-Number(a.confidence))[0];
+ return best?{text:best.text,confidence:Number(best.confidence)||0,confirmed:false}:{text:'',confidence:0,confirmed:false};
 }
 return {parse,date,telephone,reading,combine,newLines,consensus};
 });

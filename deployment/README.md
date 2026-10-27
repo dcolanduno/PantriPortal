@@ -45,6 +45,10 @@ Optional FineRx nearby price lookup requires an issued API key from FineRx (`htt
 
 Expose `/prescription-label.js` and `/prescription-scan.js` through both canonical and compatibility proxy configurations. Use the same commit's bootstrap, medicine frontend and Python modules. The browser uses the existing local ZXing/Tesseract libraries and their recognition-runtime downloads. NDC reference requests use `api.fda.gov/drug/ndc.json`; no photos or raw label text are posted to an OCR backend. The additional saved JSON properties do not rewrite existing records. Check signed-in scanner loading, public product lookup, private save/review, telephone links, and account-change cleanup. Camera hardware requires a real phone test; desktop photo OCR is a separate verification.
 
+## Prescription label OCR recovery (0.15.3)
+
+The live scanner enlarges a center crop and runs whole-frame and label-focused layouts. Preserve useful lower-confidence lines for cross-pass agreement, and show a marked strongest-candidate fallback for manual review instead of silently returning blank. Check the signed-in photo and continuous-camera flows, OCR text review, field extraction and mandatory confirmation. Real bottle/camera OCR still needs physical-device QA; synthetic tests do not prove patient-label accuracy.
+
 ## Continuous prescription label scanning (0.15.2)
 
 The signed-in label scanner requests the rear camera as soon as it opens, then reads frames locally until stopped. Keep the same NDC privacy boundary: raw images and OCR text never go to the application server. Deploy the same commit's scanner, parser, bootstrap, medicine modules and versioned server. Verify camera permission handling, continuous frame reading, deduplication of unchanged views, multi-view field preservation, explicit review/save and camera shutdown. Physical phone autofocus and actual bottle accuracy still require a real device check.
