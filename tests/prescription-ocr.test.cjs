@@ -10,4 +10,17 @@ test('combines different bottle faces and reports conflicting dose readings',()=
 });
 test('does not invent missing fields from unreadable text',()=>{const r=reading({text:'@@!?|~\nerr 003',confidence:15});assert.equal(r.text,'');assert.deepEqual(combine([r]).fields,{});});
 
+test('continuous camera frames add only newly visible label lines',()=>{
+ const prior='LISINOPRIL 10 MG\nTAKE ONE TABLET DAILY',again=[{text:'lisinopril 10 mg\nTAKE ONE TABLET DAILY'},{text:'QTY 30\nPharmacy Example'}];
+ assert.deepEqual(require('../app/prescription-label.js').newLines(prior,again),['QTY 30','Pharmacy Example']);
+ assert.deepEqual(require('../app/prescription-label.js').newLines(prior,[{text:'LISINOPRIL 10 MG'}]),[]);
+});
+
+test('scanner keeps lines confirmed by OCR passes and drops low-confidence one-off noise',()=>{
+ const {consensus}=require('../app/prescription-label.js'),r=consensus([{text:'LISINOPRIL 10 MG\n@@@',confidence:65},{text:'LISINOPRIL 10 MG\nTAKE ONE TABLET DAILY',confidence:72},{text:'LISINOPRIL 10 MG',confidence:68}]);
+ assert.equal(r.text,'LISINOPRIL 10 MG');
+ assert.equal(consensus([{text:'random glyphs !??',confidence:61}]).text,'');
+ assert.equal(consensus([{text:'RX 001234',confidence:90}]).text,'RX 001234');
+});
+
 test('doctor contact labels are not prescriber names',()=>{const {parse}=require('../app/prescription-label.js');assert.equal(parse('Doctor Phone: 212-555-0101').label_prescriber,undefined);assert.equal(parse('Dr Example').label_prescriber,'Example');});

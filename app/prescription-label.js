@@ -50,5 +50,16 @@ function combine(readings){
  }
  return {fields,conflicts:[...conflicts],text:lines.join('\n').slice(0,16000)};
 }
-return {parse,date,telephone,reading,combine};
+function newLines(existing,readings){
+ const normalize=line=>line.trim().toLowerCase().replace(/\s+/g,' '),known=new Set(String(existing||'').split('\n').map(normalize).filter(Boolean)),fresh=[];
+ for(const line of readings.flatMap(r=>String(r.text||'').split('\n')).map(line=>line.trim()).filter(Boolean)){const key=normalize(line);if(key&&!known.has(key)){known.add(key);fresh.push(line)}}
+ return fresh;
+}
+function consensus(readings,minimumVotes=2,highConfidence=84){
+ const normalize=line=>line.trim().toLowerCase().replace(/\s+/g,' '),lines=new Map();
+ for(const reading of readings){const seen=new Set();for(const text of String(reading.text||'').split('\n').map(line=>line.trim()).filter(Boolean)){const key=normalize(text);if(!key||seen.has(key))continue;seen.add(key);const item=lines.get(key)||{text,votes:0,confidence:0};item.votes++;item.confidence=Math.max(item.confidence,Number(reading.confidence)||0);lines.set(key,item)}}
+ const good=[...lines.values()].filter(item=>item.votes>=minimumVotes||item.confidence>=highConfidence);
+ return {text:good.map(item=>item.text).join('\n'),confidence:good.length?good.reduce((sum,item)=>sum+item.confidence,0)/good.length:0};
+}
+return {parse,date,telephone,reading,combine,newLines,consensus};
 });
