@@ -53,6 +53,10 @@ The live scanner enlarges a center crop and runs whole-frame and label-focused l
 
 The shared page footer reads the current version and short commit build identifier from `/api/health` with caching disabled. The server derives the build identifier from the deployed `release-source.json`; local source checkouts without release metadata report `local`. Keep the release metadata beside `server.py` when packaging and deploying so the label reflects the active release.
 
+## Guided prescription capture (0.15.5)
+
+Deploy the same commit's `prescription-scan.js`, `prescription-label.js`, `medicine.js`, bootstrap, and Python application. The guided camera takes stills only after the user taps capture; it uses browser `ImageCapture` when available and a sharpest-of-three video fallback otherwise. Quick local OCR and optional detailed OCR both stay in the browser. No prescription image or OCR text is uploaded. Preserve all existing private runtime storage; there is no schema migration. Check `/api/health` reports version 0.15.5 and the active commit, all application/transfer/proxy services remain active, the scanner assets match release hashes, signed-in access and review-before-save still work, and health/data/admin protections remain unchanged. A physical-phone camera and accuracy check is still required after rollout.
+
 ## Continuous prescription label scanning (0.15.2)
 
 The signed-in label scanner requests the rear camera as soon as it opens, then reads frames locally until stopped. Keep the same NDC privacy boundary: raw images and OCR text never go to the application server. Deploy the same commit's scanner, parser, bootstrap, medicine modules and versioned server. Verify camera permission handling, continuous frame reading, deduplication of unchanged views, multi-view field preservation, explicit review/save and camera shutdown. Physical phone autofocus and actual bottle accuracy still require a real device check.
