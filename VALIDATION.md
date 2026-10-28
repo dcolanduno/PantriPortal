@@ -190,3 +190,8 @@ Version 0.15.5 replaces repeated automatic OCR with guided still capture: use th
 Version 0.15.6 changes prescription capture to continuous local barcode decoding when the rear camera opens. GS1 identifiers are parsed with check-digit and date validation; exact GTIN/NDC lookup is limited to product codes, while lot, serial and expiry remain local until the user reviews and saves. Barcode values never fill the Rx number, and user-specific pharmacy label fields are never inferred. The FDA lookup uses an exact UPC/GTIN match or exact package NDC. Full test suites pass: 76 Python tests and 25 JavaScript tests; live phone hardware and the user's actual bottle remain unverified.
 
 Version 0.15.7 clarifies FDA UPC matches as product candidates, not package-level matches. GTIN lookup no longer returns or populates a package NDC because the FDA UPC field does not uniquely map the scanned package NDC. Exact GS1 AI 715 NDC lookups remain package-code matches.
+
+
+## Live prescription barcode reader recovery — October 28, 2026
+
+Version 0.15.8 replaces app-managed repeated canvas copies with ZXing BrowserMultiFormatReader's continuous camera-stream decoder, matching the existing pantry barcode scanner path. The reader owns camera acquisition and scan scheduling, returns decoded results through its callback, and is stopped when a code is read or the dialog closes. The browser harness now exercises the continuous decoder callback, GS1 field extraction, exact lookup, opt-in OCR and camera cleanup. Physical phone scan QA remains outstanding.
