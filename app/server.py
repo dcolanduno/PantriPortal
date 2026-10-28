@@ -9,7 +9,7 @@ from datetime import date
 from PIL import Image,ImageOps
 
 ROOT=Path(__file__).resolve().parent
-APP_VERSION='0.15.9'
+APP_VERSION='0.15.10'
 DATA=Path(os.environ.get('PANTRY_DATA',str(ROOT.parent/'work/runtime')));DATA.mkdir(parents=True,exist_ok=True)
 MEDIA=DATA/'media';MEDIA.mkdir(exist_ok=True);DB=DATA/'inventory.sqlite3'
 ORIGINS={'https://www.pantriportal.com','https://pantriportal.com','https://68.168.30.142'}

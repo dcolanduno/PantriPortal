@@ -68,7 +68,7 @@ function consensus(readings,minimumVotes=2,highConfidence=84){
  return best?{text:best.text,confidence:Number(best.confidence)||0,confirmed:false}:{text:'',confidence:0,confirmed:false};
 }
 function validGtin(value){if(!/^\d{8,14}$/.test(value))return false;let sum=0,weight=3;for(let i=value.length-2;i>=0;i--){sum+=Number(value[i])*weight;weight=weight===3?1:3}return (10-sum%10)%10===Number(value[value.length-1])}
-function healthcareNdc(gtin){const upc=gtin.slice(-12);return upc.startsWith('3')&&validGtin(upc)?upc.slice(1,11):''}
+function healthcareNdc(gtin){if(!validGtin(gtin))return '';if(gtin.length===14&&gtin.startsWith('003'))return gtin.slice(3,13);if(gtin.length===14&&/^[0-8]03/.test(gtin))return gtin.slice(3,13);const upc=gtin.slice(-12);return upc.startsWith('3')&&validGtin(upc)?upc.slice(1,11):''}
 function gs1Date(value){if(!/^\d{6}$/.test(value))return '';const yy=Number(value.slice(0,2)),year=yy<=49?2000+yy:1900+yy,month=Number(value.slice(2,4)),day=Number(value.slice(4,6));if(month<1||month>12||day>31)return '';const finalDay=day===0?new Date(Date.UTC(year,month,0)).getUTCDate():day;return date(`${year}-${String(month).padStart(2,'0')}-${String(finalDay).padStart(2,'0')}`)}
 function parseBarcode(raw,format=''){
  const original=String(raw||'').slice(0,512),result={raw:original,format:String(format||''),gtin:'',ndc:'',lot:'',serial:'',expires:'',fields:[],standard:false};if(!original)return result;

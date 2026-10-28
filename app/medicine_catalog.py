@@ -102,6 +102,14 @@ def valid_gtin(code):
  total=sum(int(d)* (3 if (len(code)-2-i)%2==0 else 1) for i,d in enumerate(code[:-1]))
  return (10-total%10)%10==int(code[-1])
 
+def healthcare_ndc_from_gtin(code):
+ """Extract NDC from a US healthcare GTIN-12 or GTIN-14 representation."""
+ if not valid_gtin(code):return ''
+ if len(code)==14 and code.startswith('003'):return code[3:13]
+ if len(code)==14 and code[0] in '012345678' and code[1:3]=='03':return code[3:13]
+ if len(code)==12 and code.startswith('3'):return code[1:11]
+ return ''
+
 def gtin_lookup(code):
  """Resolve exact FDA drug GTINs and the GS1 healthcare NDC encoding."""
  if not valid_gtin(code):return {'results':[]}
@@ -121,11 +129,11 @@ def gtin_lookup(code):
   if key in seen:continue
   seen.add(key);out.append({'name':row.get('brand_name') or row.get('generic_name',''),'strength':'; '.join(i.get('strength','') for i in row.get('active_ingredients',[]) if i.get('strength')),'manufacturer':row.get('labeler_name',''),'gtin':code})
  if out:return {'results':out}
- # U.S. healthcare UPCs use leading digit 3 followed by the 10-digit NDC
- # and a UPC check digit. For a zero-padded GTIN-14, the embedded UPC is last.
- upc=code[-12:]
- if upc.startswith('3') and valid_gtin(upc):
-  ndc_results=ndc_lookup(upc[1:11])
+ # U.S. healthcare GTIN-12 embeds the NDC after prefix 3. GTIN-14 uses
+ # either two leading zeroes for a sale unit or an indicator plus 03 for cases.
+ ndc=healthcare_ndc_from_gtin(code)
+ if ndc:
+  ndc_results=ndc_lookup(ndc)
   for row in ndc_results.get('results',[]):
    row['gtin']=code
    row.setdefault('source','FDA NDC Directory' if not ndc_results.get('source') else ndc_results['source'])

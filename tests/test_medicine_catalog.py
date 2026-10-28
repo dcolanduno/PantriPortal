@@ -66,6 +66,7 @@ class CatalogParsingTests(unittest.TestCase):
   self.assertIn('openfda.upc:"09506000134352"',query);self.assertIn('openfda.upc:"9506000134352"',query)
   with patch.object(catalog,'fetch') as fetch:catalog.gtin_lookup('09506000134353');fetch.assert_not_called()
  def test_healthcare_gtin_uses_embedded_ndc_when_fda_gtin_index_misses(self):
+  self.assertEqual(catalog.healthcare_ndc_from_gtin('10300010123452'),'0001012345')
   ndc_row={'package_ndc':'0001-0123-45','brand_name':'Synthetic Rx','generic_name':'Example medicine','labeler_name':'Example manufacturer','active_ingredients':[{'strength':'10 mg'}]}
   with patch.object(catalog,'fetch',side_effect=[{}, {'results':[{'brand_name':'Synthetic Rx','generic_name':'Example medicine','labeler_name':'Example manufacturer','active_ingredients':[{'strength':'10 mg'}],'packaging':[ndc_row]}]}]) as fetch:
    result=catalog.gtin_lookup('00300010123455')

@@ -200,3 +200,5 @@ Version 0.15.8 replaces app-managed repeated canvas copies with ZXing BrowserMul
 ## Barcode product lookup fallback — October 28, 2026
 
 Version 0.15.9 keeps lookup specific to prescription drugs. It removes retail UPC catalog search, resolves GS1 healthcare GTINs that embed the NDC (prefix 3), and checks exact NDC misses through the official DailyMed SPL API. Pharmacy-created Rx tracking barcodes are explained as non-universal rather than guessed as medicine identifiers. Tests cover GS1 healthcare UPC/GTIN decoding, exact NDC matching, DailyMed fallback and review safeguards.
+
+Version 0.15.10 also resolves case-level GTIN-14 identifiers (indicator digit + GS1 healthcare prefix 03 + embedded NDC), alongside GTIN-12 sale units. A live FDA lookup confirmed a Humulin R package GTIN resolves to NDC 0002-8215-01, product name, strength and manufacturer. Regression tests cover both GTIN-14 layouts.
