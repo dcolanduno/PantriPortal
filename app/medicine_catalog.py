@@ -71,7 +71,8 @@ def ndc_lookup(code):
  candidates=ndc_candidates(code)
  if not candidates:return {'results':[]}
  search=' OR '.join('packaging.package_ndc:'+literal(n) for n in candidates)
- data=fetch('https://api.fda.gov/drug/ndc.json?'+urllib.parse.urlencode({'search':search,'limit':10}))
+ try:data=fetch('https://api.fda.gov/drug/ndc.json?'+urllib.parse.urlencode({'search':search,'limit':10}))
+ except CatalogUnavailable:data={}
  out=[];seen=set()
  for row in data.get('results',[]):
   for package in row.get('packaging',[]):
@@ -79,7 +80,22 @@ def ndc_lookup(code):
    if ndc not in candidates or ndc in seen:continue
    seen.add(ndc)
    out.append({'ndc':ndc,'name':row.get('brand_name') or row.get('generic_name',''),'strength':'; '.join(i.get('strength','') for i in row.get('active_ingredients',[]) if i.get('strength')),'manufacturer':row.get('labeler_name','')})
- return {'results':out}
+ if out:return {'results':out}
+ # DailyMed is a second free, official NDC source. openFDA's directory does
+ # not harmonize every package, so an exact NDC can otherwise look like a miss.
+ results=[];seen=set()
+ for ndc in candidates:
+  data=fetch('https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json?'+urllib.parse.urlencode({'ndc':ndc,'pagesize':8}))
+  for row in data.get('data',[]):
+   title=str(row.get('title',''))[:500];match=re.match(r'^\s*(.*?)\s*\[([^\]]+)\]\s*$',title)
+   label=match.group(1).strip() if match else title
+   maker=match.group(2).strip() if match else ''
+   setid=str(row.get('setid',''))
+   if not label or not re.fullmatch(r'[a-fA-F0-9-]{36}',setid):continue
+   key=(ndc,setid)
+   if key in seen:continue
+   seen.add(key);results.append({'ndc':ndc,'name':label,'strength':'','manufacturer':maker,'source':'DailyMed','source_url':'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid='+setid})
+ return {'results':results,'source':'DailyMed' if results else ''}
 
 def valid_gtin(code):
  if not isinstance(code,str) or len(code) not in (8,12,13,14) or not code.isascii() or not code.isdigit():return False
@@ -87,7 +103,7 @@ def valid_gtin(code):
  return (10-total%10)%10==int(code[-1])
 
 def gtin_lookup(code):
- """Match only an exact FDA-harmonized UPC; never infer an NDC from GTIN digits."""
+ """Resolve exact FDA drug GTINs and the GS1 healthcare NDC encoding."""
  if not valid_gtin(code):return {'results':[]}
  variants=[code]
  for length in (13,12):
@@ -95,7 +111,8 @@ def gtin_lookup(code):
   if len(candidate)==length and code.startswith('0'*(14-length)) and valid_gtin(candidate):variants.append(candidate)
  variants=list(dict.fromkeys(variants))
  search=' OR '.join('openfda.upc:'+literal(v) for v in variants)
- data=fetch('https://api.fda.gov/drug/ndc.json?'+urllib.parse.urlencode({'search':search,'limit':10}))
+ try:data=fetch('https://api.fda.gov/drug/ndc.json?'+urllib.parse.urlencode({'search':search,'limit':10}))
+ except CatalogUnavailable:data={}
  out=[];seen=set()
  for row in data.get('results',[]):
   f=row.get('openfda',{});upcs=f.get('upc',[])
@@ -103,7 +120,17 @@ def gtin_lookup(code):
   key=(row.get('product_ndc',''),row.get('brand_name'),row.get('generic_name'))
   if key in seen:continue
   seen.add(key);out.append({'name':row.get('brand_name') or row.get('generic_name',''),'strength':'; '.join(i.get('strength','') for i in row.get('active_ingredients',[]) if i.get('strength')),'manufacturer':row.get('labeler_name',''),'gtin':code})
- return {'results':out}
+ if out:return {'results':out}
+ # U.S. healthcare UPCs use leading digit 3 followed by the 10-digit NDC
+ # and a UPC check digit. For a zero-padded GTIN-14, the embedded UPC is last.
+ upc=code[-12:]
+ if upc.startswith('3') and valid_gtin(upc):
+  ndc_results=ndc_lookup(upc[1:11])
+  for row in ndc_results.get('results',[]):
+   row['gtin']=code
+   row.setdefault('source','FDA NDC Directory' if not ndc_results.get('source') else ndc_results['source'])
+  return ndc_results
+ return {'results':[]}
 
 def fda_query(search,limit=12):
  d=fetch('https://api.fda.gov/drug/label.json?'+urllib.parse.urlencode({'search':search,'limit':limit,'sort':'effective_time:desc'}))

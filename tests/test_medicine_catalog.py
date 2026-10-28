@@ -56,7 +56,7 @@ class CatalogParsingTests(unittest.TestCase):
   fixture={'results':[{'brand_name':'Synthetic drug','labeler_name':'Example manufacturer','active_ingredients':[{'strength':'10 mg/1'}],'packaging':[{'package_ndc':'0002-8215-01'},{'package_ndc':'9999-9999-99'}]}]}
   with patch.object(catalog,'fetch',return_value=fixture) as fetch:rows=catalog.ndc_lookup('00002-8215-01')['results']
   self.assertEqual(len(rows),1);self.assertEqual(rows[0]['ndc'],'0002-8215-01');self.assertEqual(rows[0]['strength'],'10 mg/1')
-  self.assertEqual(urllib.parse.parse_qs(urllib.parse.urlsplit(fetch.call_args.args[0]).query)['search'],['packaging.package_ndc:"0002-8215-01" OR packaging.package_ndc:"00002-8215-1"'])
+  self.assertEqual(urllib.parse.parse_qs(urllib.parse.urlsplit(fetch.call_args_list[0].args[0]).query)['search'],['packaging.package_ndc:"0002-8215-01" OR packaging.package_ndc:"00002-8215-1"'])
  def test_gtin_requires_check_digit_and_exact_upc_match(self):
   self.assertTrue(catalog.valid_gtin('09506000134352'));self.assertFalse(catalog.valid_gtin('09506000134353'))
   fixture={'results':[{'brand_name':'Synthetic drug','labeler_name':'Example maker','active_ingredients':[{'strength':'10 mg'}],'openfda':{'upc':['9506000134352']},'packaging':[{'package_ndc':'0002-8215-01'}]}]}
@@ -65,6 +65,20 @@ class CatalogParsingTests(unittest.TestCase):
   query=urllib.parse.parse_qs(urllib.parse.urlsplit(fetch.call_args.args[0]).query)['search'][0]
   self.assertIn('openfda.upc:"09506000134352"',query);self.assertIn('openfda.upc:"9506000134352"',query)
   with patch.object(catalog,'fetch') as fetch:catalog.gtin_lookup('09506000134353');fetch.assert_not_called()
+ def test_healthcare_gtin_uses_embedded_ndc_when_fda_gtin_index_misses(self):
+  ndc_row={'package_ndc':'0001-0123-45','brand_name':'Synthetic Rx','generic_name':'Example medicine','labeler_name':'Example manufacturer','active_ingredients':[{'strength':'10 mg'}]}
+  with patch.object(catalog,'fetch',side_effect=[{}, {'results':[{'brand_name':'Synthetic Rx','generic_name':'Example medicine','labeler_name':'Example manufacturer','active_ingredients':[{'strength':'10 mg'}],'packaging':[ndc_row]}]}]) as fetch:
+   result=catalog.gtin_lookup('00300010123455')
+  self.assertEqual(len(result['results']),1);row=result['results'][0]
+  self.assertEqual(row['ndc'],'0001-0123-45');self.assertEqual(row['gtin'],'00300010123455');self.assertEqual(row['name'],'Synthetic Rx')
+  self.assertEqual(urllib.parse.parse_qs(urllib.parse.urlsplit(fetch.call_args_list[1].args[0]).query)['search'],['packaging.package_ndc:"0001-0123-45" OR packaging.package_ndc:"00010-123-45" OR packaging.package_ndc:"00010-1234-5"'])
+ def test_exact_ndc_falls_back_to_dailymed_when_openfda_misses(self):
+  fixture={'data':[{'title':'TYLENOL EXTRA STRENGTH (ACETAMINOPHEN) TABLET [KENVUE BRANDS LLC]','setid':'17cfa99d-abb2-4d77-9e0e-e77109fbb61a'}]}
+  with patch.object(catalog,'fetch',side_effect=[{},fixture]):result=catalog.ndc_lookup('50580-378-06')
+  self.assertEqual(result['source'],'DailyMed');self.assertEqual(result['results'][0]['ndc'],'50580-378-06')
+  self.assertEqual(result['results'][0]['name'],'TYLENOL EXTRA STRENGTH (ACETAMINOPHEN) TABLET');self.assertEqual(result['results'][0]['manufacturer'],'KENVUE BRANDS LLC')
+  with patch.object(catalog,'fetch',side_effect=[catalog.CatalogUnavailable(),fixture]):result=catalog.ndc_lookup('50580-378-06')
+  self.assertEqual(result['source'],'DailyMed');self.assertEqual(result['results'][0]['ndc'],'50580-378-06')
 
 class CatalogApiTests(unittest.TestCase):
  setUpClass=classmethod(medicine_tests.MedicineTests.setUpClass.__func__)

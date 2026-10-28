@@ -195,3 +195,8 @@ Version 0.15.7 clarifies FDA UPC matches as product candidates, not package-leve
 ## Live prescription barcode reader recovery — October 28, 2026
 
 Version 0.15.8 replaces app-managed repeated canvas copies with ZXing BrowserMultiFormatReader's continuous camera-stream decoder, matching the existing pantry barcode scanner path. The reader owns camera acquisition and scan scheduling, returns decoded results through its callback, and is stopped when a code is read or the dialog closes. The browser harness now exercises the continuous decoder callback, GS1 field extraction, exact lookup, opt-in OCR and camera cleanup. Physical phone scan QA remains outstanding.
+
+
+## Barcode product lookup fallback — October 28, 2026
+
+Version 0.15.9 keeps lookup specific to prescription drugs. It removes retail UPC catalog search, resolves GS1 healthcare GTINs that embed the NDC (prefix 3), and checks exact NDC misses through the official DailyMed SPL API. Pharmacy-created Rx tracking barcodes are explained as non-universal rather than guessed as medicine identifiers. Tests cover GS1 healthcare UPC/GTIN decoding, exact NDC matching, DailyMed fallback and review safeguards.

@@ -53,3 +53,7 @@ test('parses parenthesized GS1 element strings and month-end expiration',()=>{
  const r=parseBarcode('(01)09506000134352(17)261200(10)BATCH(21)ABC123','DATA_MATRIX');
  assert.equal(r.gtin,'09506000134352');assert.equal(r.expires,'2026-12-31');assert.equal(r.lot,'BATCH');assert.equal(r.serial,'ABC123');
 });
+test('decodes healthcare UPC-A package barcodes to their embedded drug NDC',()=>{
+ const r=parseBarcode('300010123455','UPC_A');assert.equal(r.standard,true);assert.equal(r.gtin,'00300010123455');assert.equal(r.ndc,'0001012345');
+ const matrix=parseBarcode(']d20100300010123455','DATA_MATRIX');assert.equal(matrix.gtin,'00300010123455');assert.equal(matrix.ndc,'0001012345');
+});

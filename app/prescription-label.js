@@ -68,11 +68,12 @@ function consensus(readings,minimumVotes=2,highConfidence=84){
  return best?{text:best.text,confidence:Number(best.confidence)||0,confirmed:false}:{text:'',confidence:0,confirmed:false};
 }
 function validGtin(value){if(!/^\d{8,14}$/.test(value))return false;let sum=0,weight=3;for(let i=value.length-2;i>=0;i--){sum+=Number(value[i])*weight;weight=weight===3?1:3}return (10-sum%10)%10===Number(value[value.length-1])}
+function healthcareNdc(gtin){const upc=gtin.slice(-12);return upc.startsWith('3')&&validGtin(upc)?upc.slice(1,11):''}
 function gs1Date(value){if(!/^\d{6}$/.test(value))return '';const yy=Number(value.slice(0,2)),year=yy<=49?2000+yy:1900+yy,month=Number(value.slice(2,4)),day=Number(value.slice(4,6));if(month<1||month>12||day>31)return '';const finalDay=day===0?new Date(Date.UTC(year,month,0)).getUTCDate():day;return date(`${year}-${String(month).padStart(2,'0')}-${String(finalDay).padStart(2,'0')}`)}
 function parseBarcode(raw,format=''){
  const original=String(raw||'').slice(0,512),result={raw:original,format:String(format||''),gtin:'',ndc:'',lot:'',serial:'',expires:'',fields:[],standard:false};if(!original)return result;
  let data=original.trim().replace(/^\](?:d2|C1|Q3)/,'');
- const set=(ai,value)=>{if(ai==='01'&&/^\d{14}$/.test(value)&&validGtin(value)){result.gtin=value;result.standard=true}
+ const set=(ai,value)=>{if(ai==='01'&&/^\d{14}$/.test(value)&&validGtin(value)){result.gtin=value;result.ndc=healthcareNdc(value);result.standard=true}
   else if(ai==='715'&&/^\d{12}$/.test(value)){result.ndc=value;result.standard=true}
   else if(ai==='17'){result.expires=gs1Date(value)}
   else if(ai==='10'&&value){result.lot=value.slice(0,20)}
@@ -87,7 +88,7 @@ function parseBarcode(raw,format=''){
  data=data.replace(/[\x1d\x00]/g,'\x1d');let i=0;
  while(i<data.length){if(data[i]==='\x1d'){i++;continue}let ai='';if(data.startsWith('715',i)&&/^\d{12}/.test(data.slice(i+3)))ai='715';else if(['01','17','10','21'].some(x=>data.startsWith(x,i)))ai=['01','17','10','21'].find(x=>data.startsWith(x,i));if(!ai)break;i+=ai.length;const length=ai==='01'?14:ai==='17'?6:null;if(length){const v=data.slice(i,i+length);if(v.length!==length||!/^\d+$/.test(v))break;set(ai,v);i+=length;continue}const end=data.indexOf('\x1d',i),v=data.slice(i,end<0?data.length:end);set(ai,v);i=end<0?data.length:end;
  }
- if(!result.standard&&['UPC_A','EAN_13','EAN_8','UPC_E','UPC-A','EAN-13'].includes(String(format).toUpperCase())){const digits=data.replace(/\D/g,'');if(validGtin(digits)){result.gtin=digits.padStart(14,'0');result.standard=true;result.fields.push({ai:'01',value:result.gtin})}}
+ if(!result.standard&&['UPC_A','EAN_13','EAN_8','UPC_E','UPC-A','EAN-13'].includes(String(format).toUpperCase())){const digits=data.replace(/\D/g,'');if(validGtin(digits)){result.gtin=digits.padStart(14,'0');result.ndc=healthcareNdc(result.gtin);result.standard=true;result.fields.push({ai:'01',value:result.gtin})}}
  return result;
 }
 return {parse,date,telephone,reading,combine,newLines,consensus,parseBarcode,validGtin};
