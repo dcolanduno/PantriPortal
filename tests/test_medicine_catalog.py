@@ -57,6 +57,14 @@ class CatalogParsingTests(unittest.TestCase):
   with patch.object(catalog,'fetch',return_value=fixture) as fetch:rows=catalog.ndc_lookup('00002-8215-01')['results']
   self.assertEqual(len(rows),1);self.assertEqual(rows[0]['ndc'],'0002-8215-01');self.assertEqual(rows[0]['strength'],'10 mg/1')
   self.assertEqual(urllib.parse.parse_qs(urllib.parse.urlsplit(fetch.call_args.args[0]).query)['search'],['packaging.package_ndc:"0002-8215-01" OR packaging.package_ndc:"00002-8215-1"'])
+ def test_gtin_requires_check_digit_and_exact_upc_match(self):
+  self.assertTrue(catalog.valid_gtin('09506000134352'));self.assertFalse(catalog.valid_gtin('09506000134353'))
+  fixture={'results':[{'brand_name':'Synthetic drug','labeler_name':'Example maker','active_ingredients':[{'strength':'10 mg'}],'openfda':{'upc':['9506000134352']},'packaging':[{'package_ndc':'0002-8215-01'}]}]}
+  with patch.object(catalog,'fetch',return_value=fixture) as fetch:rows=catalog.gtin_lookup('09506000134352')['results']
+  self.assertEqual(rows[0]['ndc'],'0002-8215-01');self.assertEqual(rows[0]['gtin'],'09506000134352')
+  query=urllib.parse.parse_qs(urllib.parse.urlsplit(fetch.call_args.args[0]).query)['search'][0]
+  self.assertIn('openfda.upc:"09506000134352"',query);self.assertIn('openfda.upc:"9506000134352"',query)
+  with patch.object(catalog,'fetch') as fetch:catalog.gtin_lookup('09506000134353');fetch.assert_not_called()
 
 class CatalogApiTests(unittest.TestCase):
  setUpClass=classmethod(medicine_tests.MedicineTests.setUpClass.__func__)
@@ -84,11 +92,15 @@ class CatalogApiTests(unittest.TestCase):
    self.api('search/ndc','POST',{'code':'RX123456'},400)
    self.call(client(),'/api/medicine/search/ndc','POST',{'code':'0002-8215-01'},status=401)
    self.call(self.a,'/api/medicine/search/ndc','POST',{'code':'0002-8215-01'},'wrong',403)
-  rid=self.create(ndc='0002-8215-01',label_prescriber='PRIVATE_PRESCRIBER',bottle_expires='2027-10-20',rx_number='001234',refills_remaining=0,pharmacy_phone='212-555-0100')['id']
-  row=self.saved(rid);self.assertEqual(row['rx_number'],'001234');self.assertEqual(row['bottle_expires'],'2027-10-20');self.assertEqual(row['expires'],'');self.assertEqual(row['refills_remaining'],0)
+  with patch.object(catalog,'gtin_lookup',return_value={'results':[]}) as lookup:
+   self.api('search/gtin','POST',{'code':'09506000134352','raw':'PRIVATE_SERIAL'})
+   lookup.assert_called_once_with('09506000134352')
+   self.api('search/gtin','POST',{'code':'09506000134353'},400)
+  rid=self.create(ndc='0002-8215-01',product_gtin='09506000134352',product_lot='LOT-123',product_serial='SERIAL-9',label_prescriber='PRIVATE_PRESCRIBER',bottle_expires='2027-10-20',rx_number='001234',refills_remaining=0,pharmacy_phone='212-555-0100')['id']
+  row=self.saved(rid);self.assertEqual(row['rx_number'],'001234');self.assertEqual(row['bottle_expires'],'2027-10-20');self.assertEqual(row['product_gtin'],'09506000134352');self.assertEqual(row['product_lot'],'LOT-123');self.assertEqual(row['product_serial'],'SERIAL-9');self.assertEqual(row['expires'],'');self.assertEqual(row['refills_remaining'],0)
   self.assertEqual(self.call(self.b,'/api/medicine/state')['records'],[])
   self.call(self.b,'/api/medicine/records/'+rid,'PUT',row,self.ub['csrf'],404)
-  for fields in [{'ndc':'https://evil.invalid'},{'bottle_expires':'2026-02-30'}]:self.api('records','POST',dict(kind='prescription',name='Test',**fields),400)
+  for fields in [{'ndc':'https://evil.invalid'},{'bottle_expires':'2026-02-30'},{'product_gtin':'09506000134353'},{'product_serial':'bad serial'}]:self.api('records','POST',dict(kind='prescription',name='Test',**fields),400)
   with server.db() as c:logs=json.dumps([dict(r) for r in c.execute("SELECT * FROM audit_events WHERE route='/api/medicine'")])
   for marker in ['PRIVATE_LABEL','PRIVATE_PERSON','PRIVATE_PRESCRIBER','001234','0002-8215-01']:self.assertNotIn(marker,logs)
 

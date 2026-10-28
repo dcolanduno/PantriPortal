@@ -303,7 +303,7 @@ def handle(h,path,q,user,method_override=None):
  if tail=='overview' and method=='GET':
   grants=permissions(user)
   if not grants:raise _api.Problem(403,'Administrator access is required.')
-  result={'permissions':sorted(grants),'permission_labels':PERMISSIONS,'full_admin':full_admin(user),'version':'0.15.5','content_types':['inventory','recipes','product images','recipe images'],'logging':{'started':True,'retroactive':False,'suppressed_anonymous_events':_suppressed,'policy':'Server actions and signed-in browser error types; no passwords, tokens, bodies or query strings. Repeated anonymous errors are sampled to resist log floods. Logs are append-only and require private host maintenance to archive.'}}
+  result={'permissions':sorted(grants),'permission_labels':PERMISSIONS,'full_admin':full_admin(user),'version':'0.15.6','content_types':['inventory','recipes','product images','recipe images'],'logging':{'started':True,'retroactive':False,'suppressed_anonymous_events':_suppressed,'policy':'Server actions and signed-in browser error types; no passwords, tokens, bodies or query strings. Repeated anonymous errors are sampled to resist log floods. Logs are append-only and require private host maintenance to archive.'}}
   if 'audit.read' in grants:
    with _api.db() as c:
     result['events']=c.execute('SELECT count(*) FROM audit_events').fetchone()[0];result['errors_24h']=c.execute("SELECT count(*) FROM audit_events WHERE error_code<>'' AND created>?",(time.time()-86400,)).fetchone()[0]

@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict');
-const {parse,date,telephone}=require('../app/prescription-label.js');
+const {parse,date,telephone,parseBarcode}=require('../app/prescription-label.js');
 test('reads explicit prescription details without turning discard dates into Rx expiration',()=>{
  const r=parse(`EXAMPLE PHARMACY
 123 Example Street
@@ -36,4 +36,20 @@ test('keeps multiline directions as printed without calculating dosing or quanti
 test('refill-call contact is distinct from doctor contact and use-by is not a direction',()=>{
  const r=parse('Phone: 212-555-0101\nEXAMPLE PHARMACY\nFor refills call: 212-555-0102\nUSE BY: 10/20/2027');
  assert.equal(r.pharmacy_phone,'212-555-0102');assert.equal(r.directions,undefined);assert.equal(r.bottle_expires,'2027-10-20');
+});
+
+test('parses GS1 pharmaceutical DataMatrix without treating serial data as a prescription number',()=>{
+ const r=parseBarcode(']d201095060001343521724123110LOT-123\u001d21SERIAL-9','DATA_MATRIX');
+ assert.equal(r.standard,true);assert.equal(r.gtin,'09506000134352');assert.equal(r.expires,'2024-12-31');assert.equal(r.lot,'LOT-123');assert.equal(r.serial,'SERIAL-9');assert.equal(r.ndc,'');assert.equal(parse(r.raw).rx_number,undefined);
+});
+test('reads FDA AI 715 NDC and rejects a bad GTIN check digit',()=>{
+ const r=parseBarcode('715000360002914','DATA_MATRIX');assert.equal(r.ndc,'000360002914');
+ const invalid=parseBarcode(']d201003600029145281724123110LOT','DATA_MATRIX');assert.equal(invalid.gtin,'');assert.equal(invalid.expires,'2024-12-31');assert.equal(invalid.standard,false);
+});
+test('lot and expiry data without a valid GS1 product identifier is not treated as a drug package',()=>{
+ const r=parseBarcode(']d21726120010LOT-1\u001d21SERIAL-1','DATA_MATRIX');assert.equal(r.standard,false);assert.equal(r.ndc,'');assert.equal(r.gtin,'');
+});
+test('parses parenthesized GS1 element strings and month-end expiration',()=>{
+ const r=parseBarcode('(01)09506000134352(17)261200(10)BATCH(21)ABC123','DATA_MATRIX');
+ assert.equal(r.gtin,'09506000134352');assert.equal(r.expires,'2026-12-31');assert.equal(r.lot,'BATCH');assert.equal(r.serial,'ABC123');
 });

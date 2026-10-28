@@ -8,7 +8,7 @@ async function load(flag,fail){
   getElementById(id){return id==='app-version'?version:{addEventListener(){},hidden:false}},
   body:{prepend(message){messages.push(message.textContent)}}
  };
- await vm.runInNewContext(source,{window:{PP_RUN_APP:flag,addEventListener(){}},document,navigator:{},matchMedia:()=>({matches:false}),fetch:(...args)=>{healthRequests.push(args);return Promise.resolve({ok:true,json:()=>Promise.resolve({version:'0.15.5',build:'abcdef123456'})})},alert(){}});
+ await vm.runInNewContext(source,{window:{PP_RUN_APP:flag,addEventListener(){}},document,navigator:{},matchMedia:()=>({matches:false}),fetch:(...args)=>{healthRequests.push(args);return Promise.resolve({ok:true,json:()=>Promise.resolve({version:'0.15.6',build:'abcdef123456'})})},alert(){}});
  await Promise.resolve();await Promise.resolve();
  return {requests,messages,version,healthRequests};
 }
@@ -23,6 +23,6 @@ test('a failed application asset stops initialization with a recovery message',a
  assert.equal(result.messages.length,1);assert.match(result.messages[0],/saved inventory is preserved/);
 });
 test('the shared footer displays the server version and deployed build without caching',async()=>{
- const result=await load(false);assert.equal(result.version.textContent,'Version 0.15.5 · Build abcdef123456');
+ const result=await load(false);assert.equal(result.version.textContent,'Version 0.15.6 · Build abcdef123456');
  assert.equal(result.healthRequests.length,1);assert.equal(result.healthRequests[0][0],'/api/health');assert.equal(result.healthRequests[0][1].cache,'no-store');
 });

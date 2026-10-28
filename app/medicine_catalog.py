@@ -81,6 +81,32 @@ def ndc_lookup(code):
    out.append({'ndc':ndc,'name':row.get('brand_name') or row.get('generic_name',''),'strength':'; '.join(i.get('strength','') for i in row.get('active_ingredients',[]) if i.get('strength')),'manufacturer':row.get('labeler_name','')})
  return {'results':out}
 
+def valid_gtin(code):
+ if not isinstance(code,str) or len(code) not in (8,12,13,14) or not code.isascii() or not code.isdigit():return False
+ total=sum(int(d)* (3 if (len(code)-2-i)%2==0 else 1) for i,d in enumerate(code[:-1]))
+ return (10-total%10)%10==int(code[-1])
+
+def gtin_lookup(code):
+ """Match only an exact FDA-harmonized UPC; never infer an NDC from GTIN digits."""
+ if not valid_gtin(code):return {'results':[]}
+ variants=[code]
+ for length in (13,12):
+  candidate=code[-length:]
+  if len(candidate)==length and code.startswith('0'*(14-length)) and valid_gtin(candidate):variants.append(candidate)
+ variants=list(dict.fromkeys(variants))
+ search=' OR '.join('openfda.upc:'+literal(v) for v in variants)
+ data=fetch('https://api.fda.gov/drug/ndc.json?'+urllib.parse.urlencode({'search':search,'limit':10}))
+ out=[];seen=set()
+ for row in data.get('results',[]):
+  f=row.get('openfda',{});upcs=f.get('upc',[])
+  if not any(v in variants for v in upcs):continue
+  ndcs={p.get('package_ndc','') for p in row.get('packaging',[]) if p.get('package_ndc')}
+  ndc=next(iter(ndcs),'')
+  key=(ndc,row.get('brand_name'),row.get('generic_name'))
+  if not ndc or key in seen:continue
+  seen.add(key);out.append({'ndc':ndc,'name':row.get('brand_name') or row.get('generic_name',''),'strength':'; '.join(i.get('strength','') for i in row.get('active_ingredients',[]) if i.get('strength')),'manufacturer':row.get('labeler_name',''),'gtin':code})
+ return {'results':out}
+
 def fda_query(search,limit=12):
  d=fetch('https://api.fda.gov/drug/label.json?'+urllib.parse.urlencode({'search':search,'limit':limit,'sort':'effective_time:desc'}))
  return d.get('results',[])
