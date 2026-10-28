@@ -61,7 +61,7 @@ class CatalogParsingTests(unittest.TestCase):
   self.assertTrue(catalog.valid_gtin('09506000134352'));self.assertFalse(catalog.valid_gtin('09506000134353'))
   fixture={'results':[{'brand_name':'Synthetic drug','labeler_name':'Example maker','active_ingredients':[{'strength':'10 mg'}],'openfda':{'upc':['9506000134352']},'packaging':[{'package_ndc':'0002-8215-01'}]}]}
   with patch.object(catalog,'fetch',return_value=fixture) as fetch:rows=catalog.gtin_lookup('09506000134352')['results']
-  self.assertEqual(rows[0]['ndc'],'0002-8215-01');self.assertEqual(rows[0]['gtin'],'09506000134352')
+  self.assertNotIn('ndc',rows[0]);self.assertEqual(rows[0]['gtin'],'09506000134352')
   query=urllib.parse.parse_qs(urllib.parse.urlsplit(fetch.call_args.args[0]).query)['search'][0]
   self.assertIn('openfda.upc:"09506000134352"',query);self.assertIn('openfda.upc:"9506000134352"',query)
   with patch.object(catalog,'fetch') as fetch:catalog.gtin_lookup('09506000134353');fetch.assert_not_called()

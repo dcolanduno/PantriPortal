@@ -33,7 +33,7 @@ function showBarcode(parsed){
  box.textContent='Checking the exact package identifier in the public FDA drug directory…';
  const endpoint=parsed.ndc?'medicine/search/ndc':'medicine/search/gtin',payload=parsed.ndc?{code:parsed.ndc}:{code:parsed.gtin};
  bridge.api(endpoint,'POST',payload).then(result=>{if(!$('#prescription-scan').open)return;box.replaceChildren();const matches=result.results||[];
-  for(const item of matches){const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent=[item.name,item.strength,item.manufacturer,item.ndc].filter(Boolean).join(' · ');b.onclick=()=>{for(const key of ['name','strength','ndc'])if(item[key])form[key].value=item[key];$('#rx-label-confirm').checked=false;box.textContent='Exact package match selected. Verify its name and strength against the bottle.'};box.append(b)}
+  for(const item of matches){const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent=[item.name,item.strength,item.manufacturer,item.ndc].filter(Boolean).join(' · ');b.onclick=()=>{for(const key of ['name','strength','ndc'])if(item[key])form[key].value=item[key];$('#rx-label-confirm').checked=false;box.textContent='FDA product candidate selected. Verify its name and strength against the bottle; the GTIN lookup does not determine the package NDC.'};box.append(b)}
   if(!matches.length)box.textContent='No exact FDA directory match for this package code. The decoded GS1 traceability values are still available for review; enter the drug name from the label.';
  }).catch(()=>{if($('#prescription-scan').open)box.textContent='The FDA directory lookup is unavailable. Decoded package data remains available; verify the medicine from its printed label.'});
 }

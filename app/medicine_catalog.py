@@ -100,11 +100,9 @@ def gtin_lookup(code):
  for row in data.get('results',[]):
   f=row.get('openfda',{});upcs=f.get('upc',[])
   if not any(v in variants for v in upcs):continue
-  ndcs={p.get('package_ndc','') for p in row.get('packaging',[]) if p.get('package_ndc')}
-  ndc=next(iter(ndcs),'')
-  key=(ndc,row.get('brand_name'),row.get('generic_name'))
-  if not ndc or key in seen:continue
-  seen.add(key);out.append({'ndc':ndc,'name':row.get('brand_name') or row.get('generic_name',''),'strength':'; '.join(i.get('strength','') for i in row.get('active_ingredients',[]) if i.get('strength')),'manufacturer':row.get('labeler_name',''),'gtin':code})
+  key=(row.get('product_ndc',''),row.get('brand_name'),row.get('generic_name'))
+  if key in seen:continue
+  seen.add(key);out.append({'name':row.get('brand_name') or row.get('generic_name',''),'strength':'; '.join(i.get('strength','') for i in row.get('active_ingredients',[]) if i.get('strength')),'manufacturer':row.get('labeler_name',''),'gtin':code})
  return {'results':out}
 
 def fda_query(search,limit=12):
