@@ -49,6 +49,10 @@ Expose `/prescription-label.js` and `/prescription-scan.js` through both canonic
 
 The live scanner enlarges a center crop and runs whole-frame and label-focused layouts. Preserve useful lower-confidence lines for cross-pass agreement, and show a marked strongest-candidate fallback for manual review instead of silently returning blank. Check the signed-in photo and continuous-camera flows, OCR text review, field extraction and mandatory confirmation. Real bottle/camera OCR still needs physical-device QA; synthetic tests do not prove patient-label accuracy.
 
+## Version footer (0.15.4)
+
+The shared page footer reads the current version and short commit build identifier from `/api/health` with caching disabled. The server derives the build identifier from the deployed `release-source.json`; local source checkouts without release metadata report `local`. Keep the release metadata beside `server.py` when packaging and deploying so the label reflects the active release.
+
 ## Continuous prescription label scanning (0.15.2)
 
 The signed-in label scanner requests the rear camera as soon as it opens, then reads frames locally until stopped. Keep the same NDC privacy boundary: raw images and OCR text never go to the application server. Deploy the same commit's scanner, parser, bootstrap, medicine modules and versioned server. Verify camera permission handling, continuous frame reading, deduplication of unchanged views, multi-view field preservation, explicit review/save and camera shutdown. Physical phone autofocus and actual bottle accuracy still require a real device check.

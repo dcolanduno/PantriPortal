@@ -23,6 +23,8 @@ class AppTests(unittest.TestCase):
  def setUp(self):
   server.RATE.clear();self.a=client();self.b=client()
   self.ua=self.register(self.a);self.ub=self.register(self.b)
+ def test_health_reports_the_running_version_and_build(self):
+  self.assertEqual(self.call(self.a,'/api/health'),{'status':'ok','version':'0.15.4','build':'local'})
  def call(self,c,path,method='GET',data=None,csrf='',status=200,origin=None):
   req=urllib.request.Request(self.base+path,method=method,data=json.dumps(data).encode() if data is not None else None,headers={'Content-Type':'application/json','Origin':origin or self.base,'X-CSRF-Token':csrf})
   try:r=c.open(req,timeout=20)

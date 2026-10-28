@@ -72,8 +72,8 @@
 /* PantriPortal live application skin: the reconstructed component styles above
    supply the approved palette; these rules adapt the existing app screens. */
 :root{--ink:#0f1425;--muted:#638183;--green:#00758c;--mint:#e6f4f5;--cream:#faf9f4;--line:#e0e4df;--white:#fff;--eggplant:#650038;--olive:#565c35}
-body{background:var(--cream);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
-.app{display:block;min-height:100vh}
+body{display:flex;flex-direction:column;min-height:100vh;background:var(--cream);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+.app{display:block;flex:1;min-height:0}
 .sidebar{position:static;z-index:auto;display:flex;flex-direction:column;align-items:stretch;gap:12px;width:min(100%,1140px);margin:0 auto;padding:14px 34px 0;background:transparent;border:0}
 .brand{display:flex;justify-content:center;width:100%;height:auto;margin:0 auto 2px;font-size:0;letter-spacing:0}
 .brand img{display:block;width:min(100%,646px);height:auto;max-height:191px;object-fit:contain}
@@ -197,6 +197,7 @@ body[data-mode=home] .hero{background:#e6f4f5;color:var(--ink)}body[data-mode=ho
 }
 /* Hidden controls must stay hidden even when component rules set display:flex. */
 html [hidden]{display:none!important}
+.app-version{display:block;margin:0 auto;padding:0 16px max(16px,env(safe-area-inset-bottom));color:#68766d;text-align:center;font-size:12px;line-height:1.5}
 .sidebar .nav{overflow:visible;position:relative;gap:12px;justify-content:center;flex-wrap:nowrap}
 .nav-dropdown{position:relative;flex:0 1 auto;min-width:0}
 .nav-dropdown summary{display:flex;align-items:center;justify-content:center;gap:9px;padding:14px 22px;border-radius:999px;color:#625e71;font-size:18px;font-weight:650;cursor:pointer;list-style:none;white-space:nowrap}

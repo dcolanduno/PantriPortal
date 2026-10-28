@@ -1,6 +1,13 @@
 // Keep the old-address transfer page in control until inventory reaches the canonical site.
 (async function(){
  'use strict';
+ const versionLabel=document.getElementById('app-version');
+ if(versionLabel){
+  fetch('/api/health',{cache:'no-store'}).then(response=>response.ok?response.json():Promise.reject()).then(info=>{
+   if(typeof info.version==='string'&&typeof info.build==='string')versionLabel.textContent=`Version ${info.version} · Build ${info.build}`;
+   else versionLabel.textContent='Version unavailable';
+  }).catch(()=>{versionLabel.textContent='Version unavailable'});
+ }
  if(window.PP_RUN_APP===false)return;
  for(const name of ['mode-data.js','app.js','features.js','modes.js','admin.js','home-sections.js','kitchen.js','prescription-label.js','medicine.js','prescription-scan.js','medicine-benefits.js','navigation.js']){
   await new Promise((resolve,reject)=>{

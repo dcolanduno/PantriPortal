@@ -9,10 +9,16 @@ from datetime import date
 from PIL import Image,ImageOps
 
 ROOT=Path(__file__).resolve().parent
+APP_VERSION='0.15.4'
 DATA=Path(os.environ.get('PANTRY_DATA',str(ROOT.parent/'work/runtime')));DATA.mkdir(parents=True,exist_ok=True)
 MEDIA=DATA/'media';MEDIA.mkdir(exist_ok=True);DB=DATA/'inventory.sqlite3'
 ORIGINS={'https://www.pantriportal.com','https://pantriportal.com','https://68.168.30.142'}
 PORT=int(os.environ.get('PANTRY_PORT','8767'))
+def release_build():
+ try:
+  commit=json.loads((ROOT/'release-source.json').read_text(encoding='utf-8')).get('commit','')
+  return commit[:12] if isinstance(commit,str) and re.fullmatch(r'[0-9a-f]{40}',commit) else 'local'
+ except (OSError,ValueError,TypeError):return 'local'
 DEV=os.environ.get('PANTRY_DEV')=='1'
 if DEV:ORIGINS.update({'http://127.0.0.1:'+str(PORT),'http://localhost:'+str(PORT)})
 COOKIE_SECURE='' if DEV else '; Secure'
@@ -555,7 +561,7 @@ class Handler(BaseHTTPRequestHandler):
   if self.command=='GET' and self.static(p):return
   if p=='/api/health' and self.command=='GET':
    with db() as c:c.execute('SELECT 1')
-   return self.send(200,{'status':'ok','version':'0.15.3'})
+   return self.send(200,{'status':'ok','version':APP_VERSION,'build':release_build()})
   if p=='/api/features' and self.command=='GET':
    from local_images import ready
    return self.send(200,{'local_images':ready()})
